@@ -1,4 +1,4 @@
-import { 
+import {
   formatEther,
   formatUnits,
   type Address,
@@ -67,21 +67,21 @@ const erc1155Abi = [
 ] as const;
 
 /**
- * Get the ETH balance for an address
- * @param addressOrEns Ethereum address or ENS name
+ * Get the Sei balance for an address
+ * @param addressOrEns Sei address or ENS name
  * @param network Network name or chain ID
- * @returns Balance in wei and ether
+ * @returns Balance in wei and sei
  */
-export async function getETHBalance(
-  addressOrEns: string, 
-  network = 'ethereum'
+export async function getBalance(
+  addressOrEns: string,
+  network = 'sei'
 ): Promise<{ wei: bigint; ether: string }> {
   // Resolve ENS name to address if needed
   const address = await resolveAddress(addressOrEns, network);
-  
+
   const client = getPublicClient(network);
   const balance = await client.getBalance({ address });
-  
+
   return {
     wei: balance,
     ether: formatEther(balance)
@@ -98,7 +98,7 @@ export async function getETHBalance(
 export async function getERC20Balance(
   tokenAddressOrEns: string,
   ownerAddressOrEns: string,
-  network = 'ethereum'
+  network = 'sei'
 ): Promise<{
   raw: bigint;
   formatted: string;
@@ -110,7 +110,7 @@ export async function getERC20Balance(
   // Resolve ENS names to addresses if needed
   const tokenAddress = await resolveAddress(tokenAddressOrEns, network);
   const ownerAddress = await resolveAddress(ownerAddressOrEns, network);
-  
+
   const publicClient = getPublicClient(network);
 
   const contract = getContract({
@@ -147,12 +147,12 @@ export async function isNFTOwner(
   tokenAddressOrEns: string,
   ownerAddressOrEns: string,
   tokenId: bigint,
-  network = 'ethereum'
+  network = 'sei'
 ): Promise<boolean> {
   // Resolve ENS names to addresses if needed
   const tokenAddress = await resolveAddress(tokenAddressOrEns, network);
   const ownerAddress = await resolveAddress(ownerAddressOrEns, network);
-  
+
   try {
     const actualOwner = await readContract({
       address: tokenAddress,
@@ -160,7 +160,7 @@ export async function isNFTOwner(
       functionName: 'ownerOf',
       args: [tokenId]
     }, network) as Address;
-    
+
     return actualOwner.toLowerCase() === ownerAddress.toLowerCase();
   } catch (error: any) {
     console.error(`Error checking NFT ownership: ${error.message}`);
@@ -178,12 +178,12 @@ export async function isNFTOwner(
 export async function getERC721Balance(
   tokenAddressOrEns: string,
   ownerAddressOrEns: string,
-  network = 'ethereum'
+  network = 'sei'
 ): Promise<bigint> {
   // Resolve ENS names to addresses if needed
   const tokenAddress = await resolveAddress(tokenAddressOrEns, network);
   const ownerAddress = await resolveAddress(ownerAddressOrEns, network);
-  
+
   return readContract({
     address: tokenAddress,
     abi: erc721Abi,
@@ -204,16 +204,16 @@ export async function getERC1155Balance(
   tokenAddressOrEns: string,
   ownerAddressOrEns: string,
   tokenId: bigint,
-  network = 'ethereum'
+  network = 'sei'
 ): Promise<bigint> {
   // Resolve ENS names to addresses if needed
   const tokenAddress = await resolveAddress(tokenAddressOrEns, network);
   const ownerAddress = await resolveAddress(ownerAddressOrEns, network);
-  
+
   return readContract({
     address: tokenAddress,
     abi: erc1155Abi,
     functionName: 'balanceOf',
     args: [ownerAddress, tokenId]
   }, network) as Promise<bigint>;
-} 
+}

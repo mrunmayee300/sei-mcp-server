@@ -1,19 +1,19 @@
 {
   "mcpServers": {
-    "evm-mcp-server": {
+    "sei-mcp-server": {
       "command": "npx",
       "args": [
         "-y",
-        "@mcpdotdirect/evm-mcp-server"
+        "@sei-protocol/sei-mcp-server"
       ]
     },
-    "evm-mcp-http": {
+    "sei-mcp-http": {
       "command": "npx",
       "args": [
-        "-y", 
-        "@mcpdotdirect/evm-mcp-server", 
+        "-y",
+        "@sei-protocol/sei-mcp-server",
         "--http"
       ]
     }
   }
-} 
+}

@@ -1,4 +1,4 @@
-import { 
+import {
   type Hash,
   type Block
 } from 'viem';
@@ -7,7 +7,7 @@ import { getPublicClient } from './clients.js';
 /**
  * Get the current block number for a specific network
  */
-export async function getBlockNumber(network = 'ethereum'): Promise<bigint> {
+export async function getBlockNumber(network = 'sei'): Promise<bigint> {
   const client = getPublicClient(network);
   return await client.getBlockNumber();
 }
@@ -16,8 +16,8 @@ export async function getBlockNumber(network = 'ethereum'): Promise<bigint> {
  * Get a block by number for a specific network
  */
 export async function getBlockByNumber(
-  blockNumber: number, 
-  network = 'ethereum'
+  blockNumber: number,
+  network = 'sei'
 ): Promise<Block> {
   const client = getPublicClient(network);
   return await client.getBlock({ blockNumber: BigInt(blockNumber) });
@@ -27,8 +27,8 @@ export async function getBlockByNumber(
  * Get a block by hash for a specific network
  */
 export async function getBlockByHash(
-  blockHash: Hash, 
-  network = 'ethereum'
+  blockHash: Hash,
+  network = 'sei'
 ): Promise<Block> {
   const client = getPublicClient(network);
   return await client.getBlock({ blockHash });
@@ -37,7 +37,7 @@ export async function getBlockByHash(
 /**
  * Get the latest block for a specific network
  */
-export async function getLatestBlock(network = 'ethereum'): Promise<Block> {
+export async function getLatestBlock(network = 'sei'): Promise<Block> {
   const client = getPublicClient(network);
   return await client.getBlock();
-} 
+}

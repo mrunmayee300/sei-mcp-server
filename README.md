@@ -1,11 +1,12 @@
-# EVM MCP Server
+# SEI MCP Server
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![EVM Networks](https://img.shields.io/badge/Networks-30+-green)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6)
 ![Viem](https://img.shields.io/badge/Viem-1.0+-green)
 
-A comprehensive Model Context Protocol (MCP) server that provides blockchain services across multiple EVM-compatible networks. This server enables AI agents to interact with Ethereum, Optimism, Arbitrum, Base, Polygon, and many other EVM chains with a unified interface.
+Sei Model Context Protocol (Sei MCP) server provides blockchain services for Sei blockchain. 
+This server enables AI assistants and agents to interact via unified interface.
 
 ## 📋 Contents
 
@@ -26,27 +27,24 @@ A comprehensive Model Context Protocol (MCP) server that provides blockchain ser
 
 ## 🔭 Overview
 
-The MCP EVM Server leverages the Model Context Protocol to provide blockchain services to AI agents. It supports a wide range of services including:
+The MCP EVM Server leverages the Model Context Protocol to provide blockchain services to AI agents. 
+It supports a wide range of services including:
 
 - Reading blockchain state (balances, transactions, blocks, etc.)
 - Interacting with smart contracts
 - Transferring tokens (native, ERC20, ERC721, ERC1155)
 - Querying token metadata and balances
-- Chain-specific services across 30+ EVM networks
-- **ENS name resolution** for all address parameters (use human-readable names like 'vitalik.eth' instead of addresses)
 
-All services are exposed through a consistent interface of MCP tools and resources, making it easy for AI agents to discover and use blockchain functionality. **Every tool that accepts Ethereum addresses also supports ENS names**, automatically resolving them to addresses behind the scenes.
-
+All services are exposed through a consistent interface of MCP tools and resources, making it easy for AI agents to 
+discover and use blockchain functionality.
 ## ✨ Features
 
 ### Blockchain Data Access
 
-- **Multi-chain support** for 30+ EVM-compatible networks
 - **Chain information** including blockNumber, chainId, and RPCs
 - **Block data** access by number, hash, or latest
 - **Transaction details** and receipts with decoded logs
 - **Address balances** for native tokens and all token standards
-- **ENS resolution** for human-readable Ethereum addresses (use 'vitalik.eth' instead of '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')
 
 ### Token services
 
@@ -83,63 +81,9 @@ All services are exposed through a consistent interface of MCP tools and resourc
 
 ## 🌐 Supported Networks
 
-### Mainnets
-- Ethereum (ETH)
-- Optimism (OP)
-- Arbitrum (ARB)
-- Arbitrum Nova
-- Base
-- Polygon (MATIC)
-- Polygon zkEVM
-- Avalanche (AVAX)
-- Binance Smart Chain (BSC)
-- zkSync Era
-- Linea
-- Celo
-- Gnosis (xDai)
-- Fantom (FTM)
-- Filecoin (FIL)
-- Moonbeam
-- Moonriver
-- Cronos
-- Scroll
-- Mantle
-- Manta
-- Blast
-- Fraxtal
-- Mode
-- Metis
-- Kroma
-- Zora
-- Aurora
-- Canto
-- Flow
-- Lumia
-
-### Testnets
-- Sepolia
-- Optimism Sepolia
-- Arbitrum Sepolia
-- Base Sepolia
-- Polygon Amoy
-- Avalanche Fuji
-- BSC Testnet
-- zkSync Sepolia
-- Linea Sepolia
-- Scroll Sepolia
-- Mantle Sepolia
-- Manta Sepolia
-- Blast Sepolia
-- Fraxtal Testnet
-- Mode Testnet
-- Metis Sepolia
-- Kroma Sepolia
-- Zora Sepolia
-- Celo Alfajores
-- Goerli
-- Holesky
-- Flow Testnet
-- Lumia Testnet
+- Sei Mainnet
+- Sei Testnet
+- Sei Localnet
 
 ## 🛠️ Prerequisites
 
@@ -150,8 +94,8 @@ All services are exposed through a consistent interface of MCP tools and resourc
 
 ```bash
 # Clone the repository
-git clone https://github.com/mcpdotdirect/mcp-evm-server.git
-cd mcp-evm-server
+git clone https://github.com/sei-protocol/sei-mcp-server.git
+cd sei-mcp-server
 
 # Install dependencies with Bun
 bun install
@@ -164,7 +108,7 @@ npm install
 
 The server uses the following default configuration:
 
-- **Default Chain ID**: 1 (Ethereum Mainnet)
+- **Default Chain ID**: 1329 (Sei Mainnet)
 - **Server Port**: 3001
 - **Server Host**: 0.0.0.0 (accessible from any network interface)
 
@@ -177,14 +121,14 @@ These values are hardcoded in the application. If you need to modify them, you c
 
 ### Using npx (No Installation Required)
 
-You can run the MCP EVM Server directly without installation using npx:
+You can run the Sei MCP Server directly without installation using npx:
 
 ```bash
 # Run the server in stdio mode (for CLI tools)
-npx @mcpdotdirect/evm-mcp-server
+npx @sei-js/sei-mcp-server
 
 # Run the server in HTTP mode (for web applications)
-npx @mcpdotdirect/evm-mcp-server --http
+npx @sei-js/sei-mcp-server --http
 ```
 
 ### Running the Server Locally
@@ -222,9 +166,9 @@ To connect to the MCP server from Cursor:
 3. Scroll down to "MCP Servers" section
 4. Click "Add new MCP server"
 5. Enter the following details:
-   - Server name: `evm-mcp-server`
+   - Server name: `sei-mcp-server`
    - Type: `command`
-   - Command: `npx @mcpdotdirect/evm-mcp-server`
+   - Command: `npx @sei-js/sei-mcp-server`
 
 6. Click "Save"
 
@@ -241,14 +185,14 @@ For a more portable configuration that you can share with your team or use acros
       "command": "npx",
       "args": [
         "-y",
-        "@mcpdotdirect/evm-mcp-server"
+        "@sei-protocol/sei-mcp-server"
       ]
     },
     "evm-mcp-http": {
       "command": "npx",
       "args": [
         "-y", 
-        "@mcpdotdirect/evm-mcp-server", 
+        "@sei-protocol/sei-mcp-server", 
         "--http"
       ]
     }
@@ -297,12 +241,12 @@ After configuring the MCP server with `mcp.json`, you can easily use it in Curso
 // blockchain-example.js
 async function main() {
   try {
-    // Get ETH balance for an address using ENS
-    console.log("Getting ETH balance for vitalik.eth...");
+    // Get Sei balance for an address using ENS
+    console.log("Getting Sei balance for 0x1234...");
     
     // When using with Cursor, you can simply ask Cursor to:
-    // "Check the ETH balance of vitalik.eth on mainnet"
-    // Or "Transfer 0.1 ETH from my wallet to vitalik.eth"
+    // "Check the Sei balance of 0x1234 on mainnet"
+    // Or "Transfer 0.1 Sei from my wallet to 0x1234"
     
     // Cursor will use the MCP server to execute these operations 
     // without requiring any additional code from you
@@ -319,9 +263,9 @@ main();
 
 2. With the file open in Cursor, you can ask Cursor to:
 
-   - "Check the current ETH balance of vitalik.eth"
-   - "Look up the price of USDC on Ethereum"
-   - "Show me the latest block on Optimism"
+   - "Check the current Sei balance of 0x1234 on mainnet"
+   - "Look up the price of USDC on Sei"
+   - "Show me the latest block on Sei"
    - "Check if 0x1234... is a contract address"
 
 3. Cursor will use the MCP server to execute these operations and return the results directly in your conversation.
@@ -334,7 +278,7 @@ If you're using Claude CLI, you can connect to the MCP server with just two comm
 
 ```bash
 # Add the MCP server
-claude mcp add evm-mcp-server npx @mcpdotdirect/evm-mcp-server
+claude mcp add evm-mcp-server npx @sei-protocol/sei-mcp-server
 
 # Start Claude with the MCP server enabled
 claude
@@ -347,16 +291,16 @@ claude
 const mcp = new McpClient("http://localhost:3000");
 
 const result = await mcp.invokeTool("get-token-balance", {
-  tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC on Ethereum
-  ownerAddress: "vitalik.eth", // ENS name instead of address
-  network: "ethereum"
+  tokenAddress: "0x3894085ef7ff0f0aedf52e2a2704928d1ec074f1", // USDC on Sei
+  ownerAddress: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", 
+  network: "sei"
 });
 
 console.log(result);
 // {
-//   tokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+//   tokenAddress: "0x3894085ef7ff0f0aedf52e2a2704928d1ec074f1",
 //   owner: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
-//   network: "ethereum",
+//   network: "sei",
 //   raw: "1000000000",
 //   formatted: "1000",
 //   symbol: "USDC",
@@ -364,31 +308,11 @@ console.log(result);
 // }
 ```
 
-### Example: Resolving an ENS Name
-
-```javascript
-// Example of using the MCP client to resolve an ENS name to an address
-const mcp = new McpClient("http://localhost:3000");
-
-const result = await mcp.invokeTool("resolve-ens", {
-  ensName: "vitalik.eth",
-  network: "ethereum"
-});
-
-console.log(result);
-// {
-//   ensName: "vitalik.eth",
-//   normalizedName: "vitalik.eth",
-//   resolvedAddress: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
-//   network: "ethereum"
-// }
-```
-
 ## 📚 API Reference
 
 ### Tools
 
-The server provides the following MCP tools for agents. **All tools that accept address parameters support both Ethereum addresses and ENS names.**
+The server provides the following MCP tools for agents. 
 
 #### Token services
 
@@ -408,16 +332,16 @@ The server provides the following MCP tools for agents. **All tools that accept 
 
 #### Blockchain services
 
-| Tool Name | Description | Key Parameters |
-|-----------|-------------|----------------|
-| `get-chain-info` | Get network information | `network` |
-| `get-balance` | Get native token balance | `address` (address/ENS), `network` |
-| `transfer-eth` | Send native tokens | `privateKey`, `to` (address/ENS), `amount`, `network` |
+| Tool Name         | Description | Key Parameters |
+|-------------------|-------------|----------------|
+| `get-chain-info`  | Get network information | `network` |
+| `get-balance`     | Get native token balance | `address` (address/ENS), `network` |
+| `transfer-sei`    | Send native tokens | `privateKey`, `to` (address/ENS), `amount`, `network` |
 | `get-transaction` | Get transaction details | `txHash`, `network` |
-| `read-contract` | Read smart contract state | `contractAddress` (address/ENS), `abi`, `functionName`, `args`, `network` |
-| `write-contract` | Write to smart contract | `contractAddress` (address/ENS), `abi`, `functionName`, `args`, `privateKey`, `network` |
-| `is-contract` | Check if address is a contract | `address` (address/ENS), `network` |
-| `resolve-ens` | Resolve ENS name to address | `ensName`, `network` |
+| `read-contract`   | Read smart contract state | `contractAddress` (address/ENS), `abi`, `functionName`, `args`, `network` |
+| `write-contract`  | Write to smart contract | `contractAddress` (address/ENS), `abi`, `functionName`, `args`, `privateKey`, `network` |
+| `is-contract`     | Check if address is a contract | `address` (address/ENS), `network` |
+| `resolve-ens`     | Resolve ENS name to address | `ensName`, `network` |
 
 ### Resources
 
@@ -425,15 +349,15 @@ The server exposes blockchain data through the following MCP resource URIs. All 
 
 #### Blockchain Resources
 
-| Resource URI Pattern | Description |
-|-----------|-------------|
+| Resource URI Pattern | Description                              |
+|-----------|------------------------------------------|
 | `evm://{network}/chain` | Chain information for a specific network |
-| `evm://chain` | Ethereum mainnet chain information |
-| `evm://{network}/block/{blockNumber}` | Block data by number |
-| `evm://{network}/block/latest` | Latest block data |
-| `evm://{network}/address/{address}/balance` | Native token balance |
-| `evm://{network}/tx/{txHash}` | Transaction details |
-| `evm://{network}/tx/{txHash}/receipt` | Transaction receipt with logs |
+| `evm://chain` | Sei mainnet chain information            |
+| `evm://{network}/block/{blockNumber}` | Block data by number                     |
+| `evm://{network}/block/latest` | Latest block data                        |
+| `evm://{network}/address/{address}/balance` | Native token balance                     |
+| `evm://{network}/tx/{txHash}` | Transaction details                      |
+| `evm://{network}/tx/{txHash}/receipt` | Transaction receipt with logs            |
 
 #### Token Resources
 
