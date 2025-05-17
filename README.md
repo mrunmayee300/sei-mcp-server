@@ -241,7 +241,7 @@ After configuring the MCP server with `mcp.json`, you can easily use it in Curso
 // blockchain-example.js
 async function main() {
   try {
-    // Get Sei balance for an address using ENS
+    // Get Sei balance for an address
     console.log("Getting Sei balance for 0x1234...");
     
     // When using with Cursor, you can simply ask Cursor to:
@@ -284,10 +284,10 @@ claude mcp add evm-mcp-server npx @sei-protocol/sei-mcp-server
 claude
 ```
 
-### Example: Getting a Token Balance with ENS
+### Example: Getting a Token Balance
 
 ```javascript
-// Example of using the MCP client to check a token balance using ENS
+// Example of using the MCP client to check a token balance
 const mcp = new McpClient("http://localhost:3000");
 
 const result = await mcp.invokeTool("get-token-balance", {
@@ -318,34 +318,33 @@ The server provides the following MCP tools for agents.
 
 | Tool Name | Description | Key Parameters |
 |-----------|-------------|----------------|
-| `get-token-info` | Get ERC20 token metadata | `tokenAddress` (address/ENS), `network` |
-| `get-token-balance` | Check ERC20 token balance | `tokenAddress` (address/ENS), `ownerAddress` (address/ENS), `network` |
-| `transfer-token` | Transfer ERC20 tokens | `privateKey`, `tokenAddress` (address/ENS), `toAddress` (address/ENS), `amount`, `network` |
-| `approve-token-spending` | Approve token allowances | `privateKey`, `tokenAddress` (address/ENS), `spenderAddress` (address/ENS), `amount`, `network` |
-| `get-nft-info` | Get NFT metadata | `tokenAddress` (address/ENS), `tokenId`, `network` |
-| `check-nft-ownership` | Verify NFT ownership | `tokenAddress` (address/ENS), `tokenId`, `ownerAddress` (address/ENS), `network` |
-| `transfer-nft` | Transfer an NFT | `privateKey`, `tokenAddress` (address/ENS), `tokenId`, `toAddress` (address/ENS), `network` |
-| `get-nft-balance` | Count NFTs owned | `tokenAddress` (address/ENS), `ownerAddress` (address/ENS), `network` |
-| `get-erc1155-token-uri` | Get ERC1155 metadata | `tokenAddress` (address/ENS), `tokenId`, `network` |
-| `get-erc1155-balance` | Check ERC1155 balance | `tokenAddress` (address/ENS), `tokenId`, `ownerAddress` (address/ENS), `network` |
-| `transfer-erc1155` | Transfer ERC1155 tokens | `privateKey`, `tokenAddress` (address/ENS), `tokenId`, `amount`, `toAddress` (address/ENS), `network` |
+| `get-token-info` | Get ERC20 token metadata | `tokenAddress` (address), `network` |
+| `get-token-balance` | Check ERC20 token balance | `tokenAddress` (address), `ownerAddress` (address), `network` |
+| `transfer-token` | Transfer ERC20 tokens | `privateKey`, `tokenAddress` (address), `toAddress` (address), `amount`, `network` |
+| `approve-token-spending` | Approve token allowances | `privateKey`, `tokenAddress` (address), `spenderAddress` (address), `amount`, `network` |
+| `get-nft-info` | Get NFT metadata | `tokenAddress` (address), `tokenId`, `network` |
+| `check-nft-ownership` | Verify NFT ownership | `tokenAddress` (address), `tokenId`, `ownerAddress` (address), `network` |
+| `transfer-nft` | Transfer an NFT | `privateKey`, `tokenAddress` (address), `tokenId`, `toAddress` (address), `network` |
+| `get-nft-balance` | Count NFTs owned | `tokenAddress` (address), `ownerAddress` (address), `network` |
+| `get-erc1155-token-uri` | Get ERC1155 metadata | `tokenAddress` (address), `tokenId`, `network` |
+| `get-erc1155-balance` | Check ERC1155 balance | `tokenAddress` (address), `tokenId`, `ownerAddress` (address), `network` |
+| `transfer-erc1155` | Transfer ERC1155 tokens | `privateKey`, `tokenAddress` (address), `tokenId`, `amount`, `toAddress` (address), `network` |
 
 #### Blockchain services
 
 | Tool Name         | Description | Key Parameters |
 |-------------------|-------------|----------------|
 | `get-chain-info`  | Get network information | `network` |
-| `get-balance`     | Get native token balance | `address` (address/ENS), `network` |
-| `transfer-sei`    | Send native tokens | `privateKey`, `to` (address/ENS), `amount`, `network` |
+| `get-balance`     | Get native token balance | `address` (address), `network` |
+| `transfer-sei`    | Send native tokens | `privateKey`, `to` (address), `amount`, `network` |
 | `get-transaction` | Get transaction details | `txHash`, `network` |
-| `read-contract`   | Read smart contract state | `contractAddress` (address/ENS), `abi`, `functionName`, `args`, `network` |
-| `write-contract`  | Write to smart contract | `contractAddress` (address/ENS), `abi`, `functionName`, `args`, `privateKey`, `network` |
-| `is-contract`     | Check if address is a contract | `address` (address/ENS), `network` |
-| `resolve-ens`     | Resolve ENS name to address | `ensName`, `network` |
+| `read-contract`   | Read smart contract state | `contractAddress` (address), `abi`, `functionName`, `args`, `network` |
+| `write-contract`  | Write to smart contract | `contractAddress` (address), `abi`, `functionName`, `args`, `privateKey`, `network` |
+| `is-contract`     | Check if address is a contract | `address` (address), `network` |
 
 ### Resources
 
-The server exposes blockchain data through the following MCP resource URIs. All resource URIs that accept addresses also support ENS names, which are automatically resolved to addresses.
+The server exposes blockchain data through the following MCP resource URIs.
 
 #### Blockchain Resources
 

@@ -3,13 +3,9 @@ import { z } from "zod";
 import { getSupportedNetworks, getRpcUrl } from "./chains.js";
 import * as services from "./services/index.js";
 import { type Address, type Hex, type Hash } from 'viem';
-import { normalize } from 'viem/ens';
 
 /**
  * Register all EVM-related tools with the MCP server
- *
- * All tools that accept EVM addresses also support ENS names (e.g., 'vitalik.eth').
- * ENS names are automatically resolved to addresses using the Ethereum Name Service.
  *
  * @param server The MCP server instance
  */
@@ -45,58 +41,6 @@ export function registerEVMTools(server: McpServer) {
           content: [{
             type: "text",
             text: `Error fetching chain info: ${error instanceof Error ? error.message : String(error)}`
-          }],
-          isError: true
-        };
-      }
-    }
-  );
-
-  // ENS LOOKUP TOOL
-
-  // Resolve ENS name to address
-  server.tool(
-    "resolve_ens",
-    "Resolve an ENS name to an EVM address",
-    {
-      ensName: z.string().describe("ENS name to resolve (e.g., 'jay.sei')"),
-      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. ENS resolution works best on Sei mainnet. Defaults to Sei mainnet.")
-    },
-    async ({ ensName, network = "sei" }) => {
-      try {
-        // Validate that the input is an ENS name
-        if (!ensName.includes('.')) {
-          return {
-            content: [{
-              type: "text",
-              text: `Error: Input "${ensName}" is not a valid ENS name. ENS names must contain a dot (e.g., 'name.sei').`
-            }],
-            isError: true
-          };
-        }
-
-        // Normalize the ENS name
-        const normalizedEns = normalize(ensName);
-
-        // Resolve the ENS name to an address
-        const address = await services.resolveAddress(ensName, network);
-
-        return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              ensName: ensName,
-              normalizedName: normalizedEns,
-              resolvedAddress: address,
-              network
-            }, null, 2)
-          }]
-        };
-      } catch (error) {
-        return {
-          content: [{
-            type: "text",
-            text: `Error resolving ENS name: ${error instanceof Error ? error.message : String(error)}`
           }],
           isError: true
         };
@@ -201,7 +145,7 @@ export function registerEVMTools(server: McpServer) {
     "get_balance",
     "Get the native token balance (Sei) for an address",
     {
-      address: z.string().describe("The wallet address or ENS name (e.g., '0x1234...' or 'vitalik.eth') to check the balance for"),
+      address: z.string().describe("The wallet address name (e.g., '0x1234...' or 'vitalik.eth') to check the balance for"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
     },
     async ({ address, network = "sei" }) => {
@@ -280,8 +224,8 @@ export function registerEVMTools(server: McpServer) {
     "get_token_balance",
     "Get the balance of an ERC20 token for an address",
     {
-      tokenAddress: z.string().describe("The contract address or ENS name of the ERC20 token (e.g., '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')"),
-      ownerAddress: z.string().describe("The wallet address or ENS name to check the balance for (e.g., '0x1234...' or 'vitalik.eth')"),
+      tokenAddress: z.string().describe("The contract address name of the ERC20 token (e.g., '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')"),
+      ownerAddress: z.string().describe("The wallet address name to check the balance for (e.g., '0x1234...' or 'vitalik.eth')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
     },
     async ({ tokenAddress, ownerAddress, network = "sei" }) => {
@@ -429,7 +373,7 @@ export function registerEVMTools(server: McpServer) {
     "Transfer native tokens (Sei) to an address",
     {
       privateKey: z.string().describe("Private key of the sender account in hex format (with or without 0x prefix). SECURITY: This is used only for transaction signing and is not stored."),
-      to: z.string().describe("The recipient address or ENS name (e.g., '0x1234...' or 'vitalik.eth')"),
+      to: z.string().describe("The recipient address name (e.g., '0x1234...' or 'vitalik.eth')"),
       amount: z.string().describe("Amount to send in Sei, as a string (e.g., '0.1')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
     },
@@ -678,8 +622,8 @@ export function registerEVMTools(server: McpServer) {
     "Transfer ERC20 tokens to an address",
     {
       privateKey: z.string().describe("Private key of the sender account in hex format (with or without 0x prefix). SECURITY: This is used only for transaction signing and is not stored."),
-      tokenAddress: z.string().describe("The contract address or ENS name of the ERC20 token to transfer (e.g., '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' for USDC or 'uniswap.eth')"),
-      toAddress: z.string().describe("The recipient address or ENS name that will receive the tokens (e.g., '0x1234...' or 'vitalik.eth')"),
+      tokenAddress: z.string().describe("The contract address name of the ERC20 token to transfer (e.g., '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' for USDC or 'uniswap.eth')"),
+      toAddress: z.string().describe("The recipient address name that will receive the tokens (e.g., '0x1234...' or 'vitalik.eth')"),
       amount: z.string().describe("Amount of tokens to send as a string (e.g., '100' for 100 tokens). This will be adjusted for the token's decimals."),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet' etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
     },
@@ -821,7 +765,7 @@ export function registerEVMTools(server: McpServer) {
     "is_contract",
     "Check if an address is a smart contract or an externally owned account (EOA)",
     {
-      address: z.string().describe("The wallet or contract address or ENS name to check (e.g., '0x1234...' or 'uniswap.eth')"),
+      address: z.string().describe("The wallet or contract address to check (e.g., '0x1234...' or 'uniswap.eth')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
     },
     async ({ address, network = "sei" }) => {
@@ -995,9 +939,9 @@ export function registerEVMTools(server: McpServer) {
     "check_nft_ownership",
     "Check if an address owns a specific NFT",
     {
-      tokenAddress: z.string().describe("The contract address or ENS name of the NFT collection (e.g., '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D' for BAYC or 'boredapeyachtclub.eth')"),
+      tokenAddress: z.string().describe("The contract address of the NFT collection (e.g., '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D' for BAYC or 'boredapeyachtclub.eth')"),
       tokenId: z.string().describe("The ID of the NFT to check (e.g., '1234')"),
-      ownerAddress: z.string().describe("The wallet address or ENS name to check ownership against (e.g., '0x1234...' or 'vitalik.eth')"),
+      ownerAddress: z.string().describe("The wallet address name to check ownership against (e.g., '0x1234...' or 'vitalik.eth')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet' etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
     },
     async ({ tokenAddress, tokenId, ownerAddress, network = "sei" }) => {

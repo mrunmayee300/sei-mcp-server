@@ -2,12 +2,11 @@ import {
   formatEther,
   formatUnits,
   type Address,
-  type Abi,
   getContract
 } from 'viem';
 import { getPublicClient } from './clients.js';
 import { readContract } from './contracts.js';
-import { resolveAddress } from './ens.js';
+import * as services from "./index.js";
 
 // Standard ERC20 ABI (minimal for reading)
 const erc20Abi = [
@@ -68,19 +67,18 @@ const erc1155Abi = [
 
 /**
  * Get the Sei balance for an address
- * @param addressOrEns Sei address or ENS name
+ * @param address Sei address
  * @param network Network name or chain ID
  * @returns Balance in wei and sei
  */
 export async function getBalance(
-  addressOrEns: string,
+  address: string,
   network = 'sei'
 ): Promise<{ wei: bigint; ether: string }> {
-  // Resolve ENS name to address if needed
-  const address = await resolveAddress(addressOrEns, network);
+  const validatedAddress = services.helpers.validateAddress(address);
 
   const client = getPublicClient(network);
-  const balance = await client.getBalance({ address });
+  const balance = await client.getBalance({ address: validatedAddress });
 
   return {
     wei: balance,
@@ -90,14 +88,14 @@ export async function getBalance(
 
 /**
  * Get the balance of an ERC20 token for an address
- * @param tokenAddressOrEns Token contract address or ENS name
- * @param ownerAddressOrEns Owner address or ENS name
+ * @param tokenAddress Token contract address
+ * @param ownerAddress Owner address
  * @param network Network name or chain ID
  * @returns Token balance with formatting information
  */
 export async function getERC20Balance(
-  tokenAddressOrEns: string,
-  ownerAddressOrEns: string,
+  tokenAddress: string,
+  ownerAddress: string,
   network = 'sei'
 ): Promise<{
   raw: bigint;
@@ -107,20 +105,19 @@ export async function getERC20Balance(
     decimals: number;
   }
 }> {
-  // Resolve ENS names to addresses if needed
-  const tokenAddress = await resolveAddress(tokenAddressOrEns, network);
-  const ownerAddress = await resolveAddress(ownerAddressOrEns, network);
+  const validatedTokenAddress = services.helpers.validateAddress(tokenAddress);
+  const validatedOwnerAddress = services.helpers.validateAddress(ownerAddress);
 
   const publicClient = getPublicClient(network);
 
   const contract = getContract({
-    address: tokenAddress,
+    address: validatedTokenAddress,
     abi: erc20Abi,
     client: publicClient,
   });
 
   const [balance, symbol, decimals] = await Promise.all([
-    contract.read.balanceOf([ownerAddress]),
+    contract.read.balanceOf([validatedOwnerAddress]),
     contract.read.symbol(),
     contract.read.decimals()
   ]);
@@ -137,31 +134,30 @@ export async function getERC20Balance(
 
 /**
  * Check if an address owns a specific NFT
- * @param tokenAddressOrEns NFT contract address or ENS name
- * @param ownerAddressOrEns Owner address or ENS name
+ * @param tokenAddress NFT contract address
+ * @param ownerAddress Owner address
  * @param tokenId Token ID to check
  * @param network Network name or chain ID
  * @returns True if the address owns the NFT
  */
 export async function isNFTOwner(
-  tokenAddressOrEns: string,
-  ownerAddressOrEns: string,
+  tokenAddress: string,
+  ownerAddress: string,
   tokenId: bigint,
   network = 'sei'
 ): Promise<boolean> {
-  // Resolve ENS names to addresses if needed
-  const tokenAddress = await resolveAddress(tokenAddressOrEns, network);
-  const ownerAddress = await resolveAddress(ownerAddressOrEns, network);
+  const validatedTokenAddress = services.helpers.validateAddress(tokenAddress);
+  const validatedOwnerAddress = services.helpers.validateAddress(ownerAddress);
 
   try {
     const actualOwner = await readContract({
-      address: tokenAddress,
+      address: validatedTokenAddress,
       abi: erc721Abi,
       functionName: 'ownerOf',
       args: [tokenId]
     }, network) as Address;
 
-    return actualOwner.toLowerCase() === ownerAddress.toLowerCase();
+    return actualOwner.toLowerCase() === validatedOwnerAddress.toLowerCase();
   } catch (error: any) {
     console.error(`Error checking NFT ownership: ${error.message}`);
     return false;
@@ -170,50 +166,48 @@ export async function isNFTOwner(
 
 /**
  * Get the number of NFTs owned by an address for a specific collection
- * @param tokenAddressOrEns NFT contract address or ENS name
- * @param ownerAddressOrEns Owner address or ENS name
+ * @param tokenAddress NFT contract address
+ * @param ownerAddress Owner address
  * @param network Network name or chain ID
  * @returns Number of NFTs owned
  */
 export async function getERC721Balance(
-  tokenAddressOrEns: string,
-  ownerAddressOrEns: string,
+  tokenAddress: string,
+  ownerAddress: string,
   network = 'sei'
 ): Promise<bigint> {
-  // Resolve ENS names to addresses if needed
-  const tokenAddress = await resolveAddress(tokenAddressOrEns, network);
-  const ownerAddress = await resolveAddress(ownerAddressOrEns, network);
+  const validatedTokenAddress = services.helpers.validateAddress(tokenAddress);
+  const validatedOwnerAddress = services.helpers.validateAddress(ownerAddress);
 
-  return readContract({
-    address: tokenAddress,
+  return await readContract({
+    address: validatedTokenAddress,
     abi: erc721Abi,
     functionName: 'balanceOf',
-    args: [ownerAddress]
+    args: [validatedOwnerAddress]
   }, network) as Promise<bigint>;
 }
 
 /**
  * Get the balance of an ERC1155 token for an address
- * @param tokenAddressOrEns ERC1155 contract address or ENS name
- * @param ownerAddressOrEns Owner address or ENS name
+ * @param tokenAddress ERC1155 contract address
+ * @param ownerAddress Owner address
  * @param tokenId Token ID to check
  * @param network Network name or chain ID
  * @returns Token balance
  */
 export async function getERC1155Balance(
-  tokenAddressOrEns: string,
-  ownerAddressOrEns: string,
+  tokenAddress: string,
+  ownerAddress: string,
   tokenId: bigint,
   network = 'sei'
 ): Promise<bigint> {
-  // Resolve ENS names to addresses if needed
-  const tokenAddress = await resolveAddress(tokenAddressOrEns, network);
-  const ownerAddress = await resolveAddress(ownerAddressOrEns, network);
+  const validatedTokenAddress = services.helpers.validateAddress(tokenAddress);
+  const validatedOwnerAddress = services.helpers.validateAddress(ownerAddress);
 
-  return readContract({
-    address: tokenAddress,
+  return await readContract({
+    address: validatedTokenAddress,
     abi: erc1155Abi,
     functionName: 'balanceOf',
-    args: [ownerAddress, tokenId]
+    args: [validatedOwnerAddress, tokenId]
   }, network) as Promise<bigint>;
 }

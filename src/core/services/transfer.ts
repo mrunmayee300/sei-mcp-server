@@ -1,17 +1,13 @@
 import {
   parseEther,
   parseUnits,
-  formatUnits,
   type Address,
   type Hash,
   type Hex,
-  type Abi,
   getContract,
-  type Account
 } from 'viem';
 import { getPublicClient, getWalletClient } from './clients.js';
-import { getChain } from '../chains.js';
-import { resolveAddress } from './ens.js';
+import * as services from "./index.js";
 
 // Standard ERC20 ABI for transfers
 const erc20TransferAbi = [
@@ -117,19 +113,18 @@ const erc1155TransferAbi = [
 /**
  * Transfer Sei to an address
  * @param privateKey Sender's private key
- * @param toAddressOrEns Recipient address or ENS name
+ * @param toAddress Recipient address
  * @param amount Amount to send in Sei
  * @param network Network name or chain ID
  * @returns Transaction hash
  */
 export async function transferSei(
   privateKey: string | Hex,
-  toAddressOrEns: string,
+  toAddress: string,
   amount: string, // in ether
   network = 'sei'
 ): Promise<Hash> {
-  // Resolve ENS name to address if needed
-  const toAddress = await resolveAddress(toAddressOrEns, network);
+  const validatedToAddress = services.helpers.validateAddress(toAddress);
 
   // Ensure the private key has 0x prefix
   const formattedKey = typeof privateKey === 'string' && !privateKey.startsWith('0x')
@@ -140,7 +135,7 @@ export async function transferSei(
   const amountWei = parseEther(amount);
 
   return client.sendTransaction({
-    to: toAddress,
+    to: validatedToAddress,
     value: amountWei,
     account: client.account!,
     chain: client.chain
@@ -149,16 +144,16 @@ export async function transferSei(
 
 /**
  * Transfer ERC20 tokens to an address
- * @param tokenAddressOrEns Token contract address or ENS name
- * @param toAddressOrEns Recipient address or ENS name
+ * @param tokenAddress Token contract address
+ * @param toAddress Recipient address
  * @param amount Amount to send (in token units)
  * @param privateKey Sender's private key
  * @param network Network name or chain ID
  * @returns Transaction details
  */
 export async function transferERC20(
-  tokenAddressOrEns: string,
-  toAddressOrEns: string,
+  tokenAddress: string,
+  toAddress: string,
   amount: string,
   privateKey: string | `0x${string}`,
   network: string = 'sei'
@@ -173,9 +168,8 @@ export async function transferERC20(
     decimals: number;
   };
 }> {
-  // Resolve ENS names to addresses if needed
-  const tokenAddress = await resolveAddress(tokenAddressOrEns, network) as Address;
-  const toAddress = await resolveAddress(toAddressOrEns, network) as Address;
+  const validatedTokenAddress = services.helpers.validateAddress(tokenAddress);
+  const validatedToAddress = services.helpers.validateAddress(toAddress);
 
   // Ensure the private key has 0x prefix
   const formattedKey = typeof privateKey === 'string' && !privateKey.startsWith('0x')
@@ -185,7 +179,7 @@ export async function transferERC20(
   // Get token details
   const publicClient = getPublicClient(network);
   const contract = getContract({
-    address: tokenAddress,
+    address: validatedTokenAddress,
     abi: erc20TransferAbi,
     client: publicClient,
   });
@@ -202,10 +196,10 @@ export async function transferERC20(
 
   // Send the transaction
   const hash = await walletClient.writeContract({
-    address: tokenAddress,
+    address: validatedTokenAddress,
     abi: erc20TransferAbi,
     functionName: 'transfer',
-    args: [toAddress, rawAmount],
+    args: [validatedToAddress, rawAmount],
     account: walletClient.account!,
     chain: walletClient.chain
   });
@@ -225,16 +219,16 @@ export async function transferERC20(
 
 /**
  * Approve ERC20 token spending
- * @param tokenAddressOrEns Token contract address or ENS name
- * @param spenderAddressOrEns Spender address or ENS name
+ * @param tokenAddress Token contract address
+ * @param spenderAddress Spender address
  * @param amount Amount to approve (in token units)
  * @param privateKey Owner's private key
  * @param network Network name or chain ID
  * @returns Transaction details
  */
 export async function approveERC20(
-  tokenAddressOrEns: string,
-  spenderAddressOrEns: string,
+  tokenAddress: string,
+  spenderAddress: string,
   amount: string,
   privateKey: string | `0x${string}`,
   network: string = 'sei'
@@ -249,9 +243,8 @@ export async function approveERC20(
     decimals: number;
   };
 }> {
-  // Resolve ENS names to addresses if needed
-  const tokenAddress = await resolveAddress(tokenAddressOrEns, network) as Address;
-  const spenderAddress = await resolveAddress(spenderAddressOrEns, network) as Address;
+  const validatedTokenAddress = services.helpers.validateAddress(tokenAddress);
+  const validatedSpenderAddress = services.helpers.validateAddress(spenderAddress);
 
   // Ensure the private key has 0x prefix
   const formattedKey = typeof privateKey === 'string' && !privateKey.startsWith('0x')
@@ -261,7 +254,7 @@ export async function approveERC20(
   // Get token details
   const publicClient = getPublicClient(network);
   const contract = getContract({
-    address: tokenAddress,
+    address: validatedTokenAddress,
     abi: erc20TransferAbi,
     client: publicClient,
   });
@@ -278,10 +271,10 @@ export async function approveERC20(
 
   // Send the transaction
   const hash = await walletClient.writeContract({
-    address: tokenAddress,
+    address: validatedTokenAddress,
     abi: erc20TransferAbi,
     functionName: 'approve',
-    args: [spenderAddress, rawAmount],
+    args: [validatedSpenderAddress, rawAmount],
     account: walletClient.account!,
     chain: walletClient.chain
   });
@@ -301,16 +294,16 @@ export async function approveERC20(
 
 /**
  * Transfer an NFT (ERC721) to an address
- * @param tokenAddressOrEns NFT contract address or ENS name
- * @param toAddressOrEns Recipient address or ENS name
+ * @param tokenAddress NFT contract address
+ * @param toAddress Recipient address
  * @param tokenId Token ID to transfer
  * @param privateKey Owner's private key
  * @param network Network name or chain ID
  * @returns Transaction details
  */
 export async function transferERC721(
-  tokenAddressOrEns: string,
-  toAddressOrEns: string,
+  tokenAddress: string,
+  toAddress: string,
   tokenId: bigint,
   privateKey: string | `0x${string}`,
   network: string = 'sei'
@@ -322,9 +315,8 @@ export async function transferERC721(
     symbol: string;
   };
 }> {
-  // Resolve ENS names to addresses if needed
-  const tokenAddress = await resolveAddress(tokenAddressOrEns, network) as Address;
-  const toAddress = await resolveAddress(toAddressOrEns, network) as Address;
+  const validatedTokenAddress = services.helpers.validateAddress(tokenAddress);
+  const validatedToAddress = services.helpers.validateAddress(toAddress);
 
   // Ensure the private key has 0x prefix
   const formattedKey = typeof privateKey === 'string' && !privateKey.startsWith('0x')
@@ -337,10 +329,10 @@ export async function transferERC721(
 
   // Send the transaction
   const hash = await walletClient.writeContract({
-    address: tokenAddress,
+    address: validatedTokenAddress,
     abi: erc721TransferAbi,
     functionName: 'transferFrom',
-    args: [fromAddress, toAddress, tokenId],
+    args: [fromAddress, validatedToAddress, tokenId],
     account: walletClient.account!,
     chain: walletClient.chain
   });
@@ -348,7 +340,7 @@ export async function transferERC721(
   // Get token metadata
   const publicClient = getPublicClient(network);
   const contract = getContract({
-    address: tokenAddress,
+    address: validatedTokenAddress,
     abi: erc721TransferAbi,
     client: publicClient,
   });
@@ -378,8 +370,8 @@ export async function transferERC721(
 
 /**
  * Transfer ERC1155 tokens to an address
- * @param tokenAddressOrEns Token contract address or ENS name
- * @param toAddressOrEns Recipient address or ENS name
+ * @param tokenAddress Token contract
+ * @param toAddress Recipient address
  * @param tokenId Token ID to transfer
  * @param amount Amount to transfer
  * @param privateKey Owner's private key
@@ -387,8 +379,8 @@ export async function transferERC721(
  * @returns Transaction details
  */
 export async function transferERC1155(
-  tokenAddressOrEns: string,
-  toAddressOrEns: string,
+  tokenAddress: string,
+  toAddress: string,
   tokenId: bigint,
   amount: string,
   privateKey: string | `0x${string}`,
@@ -398,9 +390,8 @@ export async function transferERC1155(
   tokenId: string;
   amount: string;
 }> {
-  // Resolve ENS names to addresses if needed
-  const tokenAddress = await resolveAddress(tokenAddressOrEns, network) as Address;
-  const toAddress = await resolveAddress(toAddressOrEns, network) as Address;
+  const validatedTokenAddress = services.helpers.validateAddress(tokenAddress);
+  const validatedToAddress = services.helpers.validateAddress(toAddress);
 
   // Ensure the private key has 0x prefix
   const formattedKey = typeof privateKey === 'string' && !privateKey.startsWith('0x')
@@ -416,10 +407,10 @@ export async function transferERC1155(
 
   // Send the transaction
   const hash = await walletClient.writeContract({
-    address: tokenAddress,
+    address: validatedTokenAddress,
     abi: erc1155TransferAbi,
     functionName: 'safeTransferFrom',
-    args: [fromAddress, toAddress, tokenId, amountBigInt, '0x'],
+    args: [fromAddress, validatedToAddress, tokenId, amountBigInt, '0x'],
     account: walletClient.account!,
     chain: walletClient.chain
   });

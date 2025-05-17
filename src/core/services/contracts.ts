@@ -1,5 +1,4 @@
 import {
-  type Address,
   type Hash,
   type Hex,
   type ReadContractParameters,
@@ -7,7 +6,7 @@ import {
   type Log
 } from 'viem';
 import { getPublicClient, getWalletClient } from './clients.js';
-import { resolveAddress } from './ens.js';
+import * as services from "./index.js";
 
 /**
  * Read from a contract for a specific network
@@ -39,15 +38,14 @@ export async function getLogs(params: GetLogsParameters, network = 'sei'): Promi
 
 /**
  * Check if an address is a contract
- * @param addressOrEns Address or ENS name to check
+ * @param address Address
  * @param network Network name or chain ID
  * @returns True if the address is a contract, false if it's an EOA
  */
-export async function isContract(addressOrEns: string, network = 'sei'): Promise<boolean> {
-  // Resolve ENS name to address if needed
-  const address = await resolveAddress(addressOrEns, network);
+export async function isContract(address: string, network = 'sei'): Promise<boolean> {
+  const validatedAddress = services.helpers.validateAddress(address);
 
   const client = getPublicClient(network);
-  const code = await client.getBytecode({ address });
+  const code = await client.getBytecode({ address: validatedAddress });
   return code !== undefined && code !== '0x';
 }
