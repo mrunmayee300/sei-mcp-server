@@ -7,6 +7,7 @@ import {
 } from 'viem';
 import { getPublicClient, getWalletClient } from './clients.js';
 import * as services from "./index.js";
+import { getPrivateKeyAsHex } from '../config.js';
 
 /**
  * Read from a contract for a specific network
@@ -18,13 +19,23 @@ export async function readContract(params: ReadContractParameters, network = 'se
 
 /**
  * Write to a contract for a specific network
+ * @param params Contract parameters
+ * @param network Network name or chain ID
+ * @returns Transaction hash
+ * @throws Error if no private key is available
  */
 export async function writeContract(
-  privateKey: Hex,
   params: Record<string, any>,
   network = 'sei'
 ): Promise<Hash> {
-  const client = getWalletClient(privateKey, network);
+  // Get private key from environment
+  const key = getPrivateKeyAsHex();
+  
+  if (!key) {
+    throw new Error('Private key not available. Set the PRIVATE_KEY environment variable and restart the MCP server.');
+  }
+
+  const client = getWalletClient(key, network);
   return await client.writeContract(params as any);
 }
 

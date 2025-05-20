@@ -48,6 +48,23 @@ export function registerEVMPrompts(server: McpServer) {
 
   // Address analysis prompt
   server.prompt(
+      "my_wallet_address",
+      "What is my wallet EVM address",
+      {
+      },
+      () => ({
+        messages: [{
+          role: "user",
+          content: {
+            type: "text",
+            text: `Please retrieve my wallet EVM address using tools get_address_from_private_key via MCP server.`
+          }
+        }]
+      })
+  );
+
+  // Address analysis prompt
+  server.prompt(
     "analyze_address",
     "Analyze an EVM address",
     {

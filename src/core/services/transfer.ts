@@ -8,6 +8,7 @@ import {
 } from 'viem';
 import { getPublicClient, getWalletClient } from './clients.js';
 import * as services from "./index.js";
+import { getPrivateKeyAsHex } from '../config.js';
 
 // Standard ERC20 ABI for transfers
 const erc20TransferAbi = [
@@ -112,26 +113,26 @@ const erc1155TransferAbi = [
 
 /**
  * Transfer Sei to an address
- * @param privateKey Sender's private key
  * @param toAddress Recipient address
  * @param amount Amount to send in Sei
  * @param network Network name or chain ID
  * @returns Transaction hash
+ * @throws Error if no private key is available
  */
 export async function transferSei(
-  privateKey: string | Hex,
   toAddress: string,
   amount: string, // in ether
   network = 'sei'
 ): Promise<Hash> {
   const validatedToAddress = services.helpers.validateAddress(toAddress);
+  // Get private key from environment
+  const privateKey = getPrivateKeyAsHex();
 
-  // Ensure the private key has 0x prefix
-  const formattedKey = typeof privateKey === 'string' && !privateKey.startsWith('0x')
-    ? `0x${privateKey}` as Hex
-    : privateKey as Hex;
+  if (!privateKey) {
+    throw new Error('Private key not available. Set the PRIVATE_KEY environment variable and restart the MCP server.');
+  }
 
-  const client = getWalletClient(formattedKey, network);
+  const client = getWalletClient(privateKey, network);
   const amountWei = parseEther(amount);
 
   return client.sendTransaction({
@@ -147,15 +148,14 @@ export async function transferSei(
  * @param tokenAddress Token contract address
  * @param toAddress Recipient address
  * @param amount Amount to send (in token units)
- * @param privateKey Sender's private key
  * @param network Network name or chain ID
  * @returns Transaction details
+ * @throws Error if no private key is available
  */
 export async function transferERC20(
   tokenAddress: string,
   toAddress: string,
   amount: string,
-  privateKey: string | `0x${string}`,
   network: string = 'sei'
 ): Promise<{
   txHash: Hash;
@@ -170,16 +170,18 @@ export async function transferERC20(
 }> {
   const validatedTokenAddress = services.helpers.validateAddress(tokenAddress);
   const validatedToAddress = services.helpers.validateAddress(toAddress);
+  // Get private key from environment
+  const privateKey = getPrivateKeyAsHex();
 
-  // Ensure the private key has 0x prefix
-  const formattedKey = typeof privateKey === 'string' && !privateKey.startsWith('0x')
-    ? `0x${privateKey}` as `0x${string}`
-    : privateKey as `0x${string}`;
+  if (!privateKey) {
+    throw new Error('Private key not available. Set the PRIVATE_KEY environment variable and restart the MCP server.');
+  }
+
+  const publicClient = getPublicClient(network);
 
   // Get token details
-  const publicClient = getPublicClient(network);
   const contract = getContract({
-    address: validatedTokenAddress,
+    address: tokenAddress as Address,
     abi: erc20TransferAbi,
     client: publicClient,
   });
@@ -192,7 +194,7 @@ export async function transferERC20(
   const rawAmount = parseUnits(amount, decimals);
 
   // Create wallet client for sending the transaction
-  const walletClient = getWalletClient(formattedKey, network);
+  const walletClient = getWalletClient(privateKey, network);
 
   // Send the transaction
   const hash = await walletClient.writeContract({
@@ -222,15 +224,14 @@ export async function transferERC20(
  * @param tokenAddress Token contract address
  * @param spenderAddress Spender address
  * @param amount Amount to approve (in token units)
- * @param privateKey Owner's private key
  * @param network Network name or chain ID
  * @returns Transaction details
+ * @throws Error if no private key is available
  */
 export async function approveERC20(
   tokenAddress: string,
   spenderAddress: string,
   amount: string,
-  privateKey: string | `0x${string}`,
   network: string = 'sei'
 ): Promise<{
   txHash: Hash;
@@ -246,12 +247,13 @@ export async function approveERC20(
   const validatedTokenAddress = services.helpers.validateAddress(tokenAddress);
   const validatedSpenderAddress = services.helpers.validateAddress(spenderAddress);
 
-  // Ensure the private key has 0x prefix
-  const formattedKey = typeof privateKey === 'string' && !privateKey.startsWith('0x')
-    ? `0x${privateKey}` as `0x${string}`
-    : privateKey as `0x${string}`;
+  // Get private key from environment
+  const privateKey = getPrivateKeyAsHex();
 
-  // Get token details
+  if (!privateKey) {
+    throw new Error('Private key not available. Set the PRIVATE_KEY environment variable and restart the MCP server.');
+  }
+
   const publicClient = getPublicClient(network);
   const contract = getContract({
     address: validatedTokenAddress,
@@ -267,7 +269,7 @@ export async function approveERC20(
   const rawAmount = parseUnits(amount, decimals);
 
   // Create wallet client for sending the transaction
-  const walletClient = getWalletClient(formattedKey, network);
+  const walletClient = getWalletClient(privateKey, network);
 
   // Send the transaction
   const hash = await walletClient.writeContract({
@@ -297,15 +299,14 @@ export async function approveERC20(
  * @param tokenAddress NFT contract address
  * @param toAddress Recipient address
  * @param tokenId Token ID to transfer
- * @param privateKey Owner's private key
  * @param network Network name or chain ID
  * @returns Transaction details
+ * @throws Error if no private key is available
  */
 export async function transferERC721(
   tokenAddress: string,
   toAddress: string,
   tokenId: bigint,
-  privateKey: string | `0x${string}`,
   network: string = 'sei'
 ): Promise<{
   txHash: Hash;
@@ -317,14 +318,15 @@ export async function transferERC721(
 }> {
   const validatedTokenAddress = services.helpers.validateAddress(tokenAddress);
   const validatedToAddress = services.helpers.validateAddress(toAddress);
+  // Get private key from environment
+  const privateKey = getPrivateKeyAsHex();
 
-  // Ensure the private key has 0x prefix
-  const formattedKey = typeof privateKey === 'string' && !privateKey.startsWith('0x')
-    ? `0x${privateKey}` as `0x${string}`
-    : privateKey as `0x${string}`;
+  if (!privateKey) {
+    throw new Error('Private key not available. Set the PRIVATE_KEY environment variable and restart the MCP server.');
+  }
 
   // Create wallet client for sending the transaction
-  const walletClient = getWalletClient(formattedKey, network);
+  const walletClient = getWalletClient(privateKey, network);
   const fromAddress = walletClient.account!.address;
 
   // Send the transaction
@@ -374,16 +376,15 @@ export async function transferERC721(
  * @param toAddress Recipient address
  * @param tokenId Token ID to transfer
  * @param amount Amount to transfer
- * @param privateKey Owner's private key
  * @param network Network name or chain ID
  * @returns Transaction details
+ * @throws Error if no private key is available
  */
 export async function transferERC1155(
   tokenAddress: string,
   toAddress: string,
   tokenId: bigint,
   amount: string,
-  privateKey: string | `0x${string}`,
   network: string = 'sei'
 ): Promise<{
   txHash: Hash;
@@ -392,14 +393,15 @@ export async function transferERC1155(
 }> {
   const validatedTokenAddress = services.helpers.validateAddress(tokenAddress);
   const validatedToAddress = services.helpers.validateAddress(toAddress);
+  // Get private key from environment
+  const privateKey = getPrivateKeyAsHex();
 
-  // Ensure the private key has 0x prefix
-  const formattedKey = typeof privateKey === 'string' && !privateKey.startsWith('0x')
-    ? `0x${privateKey}` as `0x${string}`
-    : privateKey as `0x${string}`;
+  if (!privateKey) {
+    throw new Error('Private key not available. Set the PRIVATE_KEY environment variable and restart the MCP server.');
+  }
 
   // Create wallet client for sending the transaction
-  const walletClient = getWalletClient(formattedKey, network);
+  const walletClient = getWalletClient(privateKey, network);
   const fromAddress = walletClient.account!.address;
 
   // Parse amount to bigint

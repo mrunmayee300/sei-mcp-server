@@ -37,6 +37,7 @@ It supports a wide range of services including:
 
 All services are exposed through a consistent interface of MCP tools and resources, making it easy for AI agents to 
 discover and use blockchain functionality.
+
 ## ✨ Features
 
 ### Blockchain Data Access
@@ -116,6 +117,21 @@ These values are hardcoded in the application. If you need to modify them, you c
 
 - For chain configuration: `src/core/chains.ts`
 - For server configuration: `src/server/http-server.ts`
+
+### Environment Variables
+
+The server supports loading configuration from environment variables:
+
+- `PRIVATE_KEY`: **Required** private key for any blockchain operations that involve signing transactions (e.g., transferring tokens, interacting with smart contracts that modify state). This is the **sole method** for providing a private key. If this environment variable is not set when a transaction-signing tool is invoked, the tool will return an error message instructing the AI assistant to ask the user to set the `PRIVATE_KEY` environment variable and restart the MCP server.
+
+Create a `.env` file in the root directory based on the `.env.example` template:
+
+```bash
+# .env.example
+PRIVATE_KEY=your_private_key_here
+```
+
+> **SECURITY WARNING**: Never commit your actual private key to version control. The `.env` file is included in `.gitignore` by default.
 
 ## 🚀 Usage
 
@@ -320,15 +336,14 @@ The server provides the following MCP tools for agents.
 |-----------|-------------|----------------|
 | `get-token-info` | Get ERC20 token metadata | `tokenAddress` (address), `network` |
 | `get-token-balance` | Check ERC20 token balance | `tokenAddress` (address), `ownerAddress` (address), `network` |
-| `transfer-token` | Transfer ERC20 tokens | `privateKey`, `tokenAddress` (address), `toAddress` (address), `amount`, `network` |
-| `approve-token-spending` | Approve token allowances | `privateKey`, `tokenAddress` (address), `spenderAddress` (address), `amount`, `network` |
+| `transfer-token` | Transfer ERC20 tokens | `tokenAddress` (address), `toAddress` (address), `amount`, `network` |
+| `approve-token-spending` | Approve token allowances | `tokenAddress` (address), `spenderAddress` (address), `amount`, `network` |
 | `get-nft-info` | Get NFT metadata | `tokenAddress` (address), `tokenId`, `network` |
 | `check-nft-ownership` | Verify NFT ownership | `tokenAddress` (address), `tokenId`, `ownerAddress` (address), `network` |
-| `transfer-nft` | Transfer an NFT | `privateKey`, `tokenAddress` (address), `tokenId`, `toAddress` (address), `network` |
 | `get-nft-balance` | Count NFTs owned | `tokenAddress` (address), `ownerAddress` (address), `network` |
 | `get-erc1155-token-uri` | Get ERC1155 metadata | `tokenAddress` (address), `tokenId`, `network` |
 | `get-erc1155-balance` | Check ERC1155 balance | `tokenAddress` (address), `tokenId`, `ownerAddress` (address), `network` |
-| `transfer-erc1155` | Transfer ERC1155 tokens | `privateKey`, `tokenAddress` (address), `tokenId`, `amount`, `toAddress` (address), `network` |
+| `transfer-erc1155` | Transfer ERC1155 tokens | `tokenAddress` (address), `tokenId`, `amount`, `toAddress` (address), `network` |
 
 #### Blockchain services
 
@@ -336,10 +351,10 @@ The server provides the following MCP tools for agents.
 |-------------------|-------------|----------------|
 | `get-chain-info`  | Get network information | `network` |
 | `get-balance`     | Get native token balance | `address` (address), `network` |
-| `transfer-sei`    | Send native tokens | `privateKey`, `to` (address), `amount`, `network` |
+| `transfer-sei`    | Send native tokens | `to` (address), `amount`, `network` |
 | `get-transaction` | Get transaction details | `txHash`, `network` |
-| `read-contract`   | Read smart contract state | `contractAddress` (address), `abi`, `functionName`, `args`, `network` |
-| `write-contract`  | Write to smart contract | `contractAddress` (address), `abi`, `functionName`, `args`, `privateKey`, `network` |
+| `read-contract`   | Read smart contract state | `contractAddress` (address), `abi`, `functionName`, `args` (optional), `network` |
+| `write-contract`  | Write to smart contract | `contractAddress` (address), `abi`, `functionName`, `args` (optional), `network` |
 | `is-contract`     | Check if address is a contract | `address` (address), `network` |
 
 ### Resources

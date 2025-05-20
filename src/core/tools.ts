@@ -2,7 +2,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { getSupportedNetworks, getRpcUrl } from "./chains.js";
 import * as services from "./services/index.js";
-import { type Address, type Hex, type Hash } from 'viem';
+import {type Address, type Hex, type Hash, WriteContractParameters, Abi} from 'viem';
+import { getPrivateKeyAsHex } from "./config.js";
 
 /**
  * Register all EVM-related tools with the MCP server
@@ -372,14 +373,13 @@ export function registerEVMTools(server: McpServer) {
     "transfer_sei",
     "Transfer native tokens (Sei) to an address",
     {
-      privateKey: z.string().describe("Private key of the sender account in hex format (with or without 0x prefix). SECURITY: This is used only for transaction signing and is not stored."),
-      to: z.string().describe("The recipient address name (e.g., '0x1234...' or 'vitalik.eth')"),
-      amount: z.string().describe("Amount to send in Sei, as a string (e.g., '0.1')"),
-      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
+      to: z.string().describe("The recipient address or ENS name (e.g., '0x1234...' or 'vitalik.eth')"),
+      amount: z.string().describe("Amount to send in SEI (or the native token of the network), as a string (e.g., '0.1')"),
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ privateKey, to, amount, network = "sei" }) => {
+    async ({ to, amount, network = "sei" }) => {
       try {
-        const txHash = await services.transferSei(privateKey, to, amount, network);
+        const txHash = await services.transferSei(to, amount, network);
 
         return {
           content: [{
@@ -410,24 +410,17 @@ export function registerEVMTools(server: McpServer) {
     "transfer_erc20",
     "Transfer ERC20 tokens to another address",
     {
-      privateKey: z.string().describe("Private key of the sending account (this is used for signing and is never stored)"),
       tokenAddress: z.string().describe("The address of the ERC20 token contract"),
       toAddress: z.string().describe("The recipient address"),
       amount: z.string().describe("The amount of tokens to send (in token units, e.g., '10' for 10 tokens)"),
-      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ privateKey, tokenAddress, toAddress, amount, network = "sei" }) => {
+    async ({ tokenAddress, toAddress, amount, network = "sei" }) => {
       try {
-        // Get the formattedKey with 0x prefix
-        const formattedKey = privateKey.startsWith('0x')
-          ? privateKey as `0x${string}`
-          : `0x${privateKey}` as `0x${string}`;
-
         const result = await services.transferERC20(
-          tokenAddress as Address,
-          toAddress as Address,
+          tokenAddress,
+          toAddress,
           amount,
-          formattedKey,
           network
         );
 
@@ -462,24 +455,17 @@ export function registerEVMTools(server: McpServer) {
     "approve_token_spending",
     "Approve another address (like a DeFi protocol or exchange) to spend your ERC20 tokens. This is often required before interacting with DeFi protocols.",
     {
-      privateKey: z.string().describe("Private key of the token owner account in hex format (with or without 0x prefix). SECURITY: This is used only for transaction signing and is not stored."),
       tokenAddress: z.string().describe("The contract address of the ERC20 token to approve for spending (e.g., '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' for USDC)"),
       spenderAddress: z.string().describe("The contract address being approved to spend your tokens (e.g., a DEX or lending protocol)"),
       amount: z.string().describe("The amount of tokens to approve in token units, not wei (e.g., '1000' to approve spending 1000 tokens). Use a very large number for unlimited approval."),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ privateKey, tokenAddress, spenderAddress, amount, network = "sei" }) => {
+    async ({ tokenAddress, spenderAddress, amount, network = "sei" }) => {
       try {
-        // Get the formattedKey with 0x prefix
-        const formattedKey = privateKey.startsWith('0x')
-          ? privateKey as `0x${string}`
-          : `0x${privateKey}` as `0x${string}`;
-
         const result = await services.approveERC20(
-          tokenAddress as Address,
-          spenderAddress as Address,
+          tokenAddress,
+          spenderAddress,
           amount,
-          formattedKey,
           network
         );
 
@@ -514,24 +500,17 @@ export function registerEVMTools(server: McpServer) {
     "transfer_nft",
     "Transfer an NFT (ERC721 token) from one address to another. Requires the private key of the current owner for signing the transaction.",
     {
-      privateKey: z.string().describe("Private key of the NFT owner account in hex format (with or without 0x prefix). SECURITY: This is used only for transaction signing and is not stored."),
       tokenAddress: z.string().describe("The contract address of the NFT collection (e.g., '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D' for Bored Ape Yacht Club)"),
       tokenId: z.string().describe("The ID of the specific NFT to transfer (e.g., '1234')"),
       toAddress: z.string().describe("The recipient wallet address that will receive the NFT"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Most NFTs are on Sei mainnet, which is the default.")
     },
-    async ({ privateKey, tokenAddress, tokenId, toAddress, network = "sei" }) => {
+    async ({ tokenAddress, tokenId, toAddress, network = "sei" }) => {
       try {
-        // Get the formattedKey with 0x prefix
-        const formattedKey = privateKey.startsWith('0x')
-          ? privateKey as `0x${string}`
-          : `0x${privateKey}` as `0x${string}`;
-
         const result = await services.transferERC721(
-          tokenAddress as Address,
-          toAddress as Address,
+          tokenAddress,
+          toAddress,
           BigInt(tokenId),
-          formattedKey,
           network
         );
 
@@ -567,26 +546,19 @@ export function registerEVMTools(server: McpServer) {
     "transfer_erc1155",
     "Transfer ERC1155 tokens to another address. ERC1155 is a multi-token standard that can represent both fungible and non-fungible tokens in a single contract.",
     {
-      privateKey: z.string().describe("Private key of the token owner account in hex format (with or without 0x prefix). SECURITY: This is used only for transaction signing and is not stored."),
       tokenAddress: z.string().describe("The contract address of the ERC1155 token collection (e.g., '0x76BE3b62873462d2142405439777e971754E8E77')"),
       tokenId: z.string().describe("The ID of the specific token to transfer (e.g., '1234')"),
       amount: z.string().describe("The quantity of tokens to send (e.g., '1' for a single NFT or '10' for 10 fungible tokens)"),
       toAddress: z.string().describe("The recipient wallet address that will receive the tokens"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. ERC1155 tokens exist across many networks. Defaults to Sei mainnet.")
     },
-    async ({ privateKey, tokenAddress, tokenId, amount, toAddress, network = "sei" }) => {
+    async ({ tokenAddress, tokenId, amount, toAddress, network = "sei" }) => {
       try {
-        // Get the formattedKey with 0x prefix
-        const formattedKey = privateKey.startsWith('0x')
-          ? privateKey as `0x${string}`
-          : `0x${privateKey}` as `0x${string}`;
-
         const result = await services.transferERC1155(
-          tokenAddress as Address,
-          toAddress as Address,
+          tokenAddress,
+          toAddress,
           BigInt(tokenId),
           amount,
-          formattedKey,
           network
         );
 
@@ -621,19 +593,17 @@ export function registerEVMTools(server: McpServer) {
     "transfer_token",
     "Transfer ERC20 tokens to an address",
     {
-      privateKey: z.string().describe("Private key of the sender account in hex format (with or without 0x prefix). SECURITY: This is used only for transaction signing and is not stored."),
-      tokenAddress: z.string().describe("The contract address name of the ERC20 token to transfer (e.g., '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' for USDC or 'uniswap.eth')"),
-      toAddress: z.string().describe("The recipient address name that will receive the tokens (e.g., '0x1234...' or 'vitalik.eth')"),
+      tokenAddress: z.string().describe("The contract address or ENS name of the ERC20 token to transfer (e.g., '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' for USDC or 'uniswap.eth')"),
+      toAddress: z.string().describe("The recipient address or ENS name that will receive the tokens (e.g., '0x1234...' or 'vitalik.eth')"),
       amount: z.string().describe("Amount of tokens to send as a string (e.g., '100' for 100 tokens). This will be adjusted for the token's decimals."),
-      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet' etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
     },
-    async ({ privateKey, tokenAddress, toAddress, amount, network = "sei" }) => {
+    async ({ tokenAddress, toAddress, amount, network = "sei" }) => {
       try {
         const result = await services.transferERC20(
           tokenAddress,
           toAddress,
           amount,
-          privateKey,
           network
         );
 
@@ -717,10 +687,9 @@ export function registerEVMTools(server: McpServer) {
       abi: z.array(z.any()).describe("The ABI (Application Binary Interface) of the smart contract function, as a JSON array"),
       functionName: z.string().describe("The name of the function to call on the contract (e.g., 'transfer')"),
       args: z.array(z.any()).describe("The arguments to pass to the function, as an array (e.g., ['0x1234...', '1000000000000000000'])"),
-      privateKey: z.string().describe("Private key of the sending account in hex format (with or without 0x prefix). SECURITY: This is used only for transaction signing and is not stored."),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ contractAddress, abi, functionName, args, privateKey, network = "sei" }) => {
+    async ({ contractAddress, abi, functionName, args, network = "sei" }) => {
       try {
         // Parse ABI if it's a string
         const parsedAbi = typeof abi === 'string' ? JSON.parse(abi) : abi;
@@ -733,7 +702,6 @@ export function registerEVMTools(server: McpServer) {
         };
 
         const txHash = await services.writeContract(
-          privateKey as Hex,
           contractParams,
           network
         );
@@ -941,7 +909,7 @@ export function registerEVMTools(server: McpServer) {
     {
       tokenAddress: z.string().describe("The contract address of the NFT collection (e.g., '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D' for BAYC or 'boredapeyachtclub.eth')"),
       tokenId: z.string().describe("The ID of the NFT to check (e.g., '1234')"),
-      ownerAddress: z.string().describe("The wallet address name to check ownership against (e.g., '0x1234...' or 'vitalik.eth')"),
+      ownerAddress: z.string().describe("The wallet address to check ownership against (e.g., '0x1234...' or 'vitalik.eth')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet' etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
     },
     async ({ tokenAddress, tokenId, ownerAddress, network = "sei" }) => {
@@ -1107,22 +1075,25 @@ export function registerEVMTools(server: McpServer) {
   server.tool(
     "get_address_from_private_key",
     "Get the EVM address derived from a private key",
-    {
-      privateKey: z.string().describe("Private key in hex format (with or without 0x prefix). SECURITY: This is used only for address derivation and is not stored.")
-    },
-    async ({ privateKey }) => {
+    {}, // Schema is empty as privateKey parameter was removed
+    async () => { // Handler function starts here
       try {
-        // Ensure the private key has 0x prefix
-        const formattedKey = privateKey.startsWith('0x') ? privateKey as Hex : `0x${privateKey}` as Hex;
+        const privateKeyValue = getPrivateKeyAsHex();
+        if (!privateKeyValue) {
+          return {
+            content: [{ type: "text", text: "Error: The PRIVATE_KEY environment variable is not set. Please set this variable with your private key and restart the MCP server for this tool to function." }],
+            isError: true
+          };
+        }
 
-        const address = services.getAddressFromPrivateKey(formattedKey);
+        const address = services.getAddressFromPrivateKey(privateKeyValue);
 
         return {
           content: [{
             type: "text",
             text: JSON.stringify({
               address,
-              privateKey: "0x" + privateKey.replace(/^0x/, '')
+              // Do not return the private key in the response.
             }, null, 2)
           }]
         };
