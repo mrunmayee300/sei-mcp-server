@@ -16,7 +16,7 @@ const env = envSchema.safeParse(process.env);
 // Format private key with 0x prefix if it exists
 const formatPrivateKey = (key?: string): string | undefined => {
   if (!key) return undefined;
-  
+
   // Ensure the private key has 0x prefix
   return key.startsWith('0x') ? key : `0x${key}`;
 };
@@ -25,15 +25,6 @@ const formatPrivateKey = (key?: string): string | undefined => {
 export const config = {
   privateKey: env.success ? formatPrivateKey(env.data.PRIVATE_KEY) : undefined,
 };
-
-/**
- * Get the private key from environment variable.
- * Returns undefined if the PRIVATE_KEY environment variable is not set.
- * @returns Private key from environment variable or undefined
- */
-export function getPrivateKey(): string | undefined {
-  return config.privateKey;
-}
 
 /**
  * Get the private key from environment variable as a Hex type for viem.
