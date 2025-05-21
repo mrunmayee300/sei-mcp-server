@@ -27,7 +27,7 @@ This server enables AI assistants and agents to interact via unified interface.
 
 ## 🔭 Overview
 
-The MCP EVM Server leverages the Model Context Protocol to provide blockchain services to AI agents. 
+The Sei MCP EVM Server leverages the Model Context Protocol to provide blockchain services to AI agents. 
 It supports a wide range of services including:
 
 - Reading blockchain state (balances, transactions, blocks, etc.)
@@ -84,7 +84,7 @@ discover and use blockchain functionality.
 
 - Sei Mainnet
 - Sei Testnet
-- Sei Localnet
+- Sei Devnet
 
 ## 🛠️ Prerequisites
 
@@ -135,6 +135,44 @@ PRIVATE_KEY=your_private_key_here
 
 ## 🚀 Usage
 
+### Using with Claude Desktop
+
+1. Install the [Claude Desktop](https://claude.ai/download).
+2. Go to Settings > Developer > Edit Config.
+3. Add the following to the `mcpServers` section:
+```json
+{
+  "mcpServers": {
+    "sei": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@sei-protocol/sei-mcp-server"
+      ],
+      "env": {
+        "PRIVATE_KEY": "your_private_key_here"
+      }
+    }
+  }
+}
+```
+4. Save the configuration file and restart Claude.
+When done, Claude will add new prompts, resources and tools.
+To access prompts, click "+" button in the bottom left corner. And then "Add from sei".
+
+![Sei Prompts](img/ClaudeSeiPrompts.png)
+
+From there, click "Add from sei" to and for example, add a "my_wallet_address" prompt.
+Claude should invoke now `get_address_from_private_key` tool and return the wallet address.
+Sometimes, model may fail to understand tbe prompt or random question. Try to add a bit more context or retry with 
+extensive thinking option.
+
+All tools available could be found by clicking "Search And Tools" button and then "sei".
+
+![Claude Search And Tools](img/ClaudeSearchAndTools.png)
+![Sei Tools](img/ClaudeSeiTools.png)
+
+
 ### Using npx (No Installation Required)
 
 You can run the Sei MCP Server directly without installation using npx:
@@ -178,49 +216,26 @@ Connect to this MCP server using any MCP-compatible client. For testing and debu
 To connect to the MCP server from Cursor:
 
 1. Open Cursor and go to Settings (gear icon in the bottom left)
-2. Click on "Features" in the left sidebar
-3. Scroll down to "MCP Servers" section
-4. Click "Add new MCP server"
-5. Enter the following details:
-   - Server name: `sei-mcp-server`
-   - Type: `command`
-   - Command: `npx @sei-js/sei-mcp-server`
-
-6. Click "Save"
-
-Once connected, you can use the MCP server's capabilities directly within Cursor. The server will appear in the MCP Servers list and can be enabled/disabled as needed.
-
-### Using mcp.json with Cursor
-
-For a more portable configuration that you can share with your team or use across projects, you can create an `.cursor/mcp.json` file in your project's root directory:
+2. Scroll down to "MCP" section
+3. Click "Add new Global MCP server"
+4. In mcp.json tab add the following configuration
 
 ```json
 {
   "mcpServers": {
-    "evm-mcp-server": {
+    "sei-mcp-server": {
       "command": "npx",
       "args": [
         "-y",
         "@sei-protocol/sei-mcp-server"
-      ]
-    },
-    "evm-mcp-http": {
-      "command": "npx",
-      "args": [
-        "-y", 
-        "@sei-protocol/sei-mcp-server", 
-        "--http"
-      ]
+      ],
+      "env": {
+        "PRIVATE_KEY": "your_private_key_here"
+      }
     }
   }
 }
 ```
-
-Place this file in your project's `.cursor` directory (create it if it doesn't exist), and Cursor will automatically detect and use these MCP server configurations when working in that project. This approach makes it easy to:
-
-1. Share MCP configurations with your team
-2. Version control your MCP setup
-3. Use different server configurations for different projects
 
 ### Example: HTTP Mode with SSE
 
@@ -229,7 +244,7 @@ If you're developing a web application and want to connect to the HTTP server wi
 ```json
 {
   "mcpServers": {
-    "evm-mcp-sse": {
+    "sei-mcp-sse": {
       "url": "http://localhost:3001/sse"
     }
   }
@@ -280,7 +295,6 @@ main();
 2. With the file open in Cursor, you can ask Cursor to:
 
    - "Check the current Sei balance of 0x1234 on mainnet"
-   - "Look up the price of USDC on Sei"
    - "Show me the latest block on Sei"
    - "Check if 0x1234... is a contract address"
 
@@ -403,6 +417,7 @@ mcp-evm-server/
 │   │   └── server.ts           # General server setup
 │   ├── core/
 │   │   ├── chains.ts           # Chain definitions and utilities
+│   │   ├── config.ts           # MCP configuration
 │   │   ├── resources.ts        # MCP resources implementation
 │   │   ├── tools.ts            # MCP tools implementation
 │   │   ├── prompts.ts          # MCP prompts implementation
