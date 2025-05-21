@@ -42,4 +42,4 @@ describe('registerEVMTools', () => {
       expect(typeof tool.handler).toBe('function');
     });
   });
-}); 
+});

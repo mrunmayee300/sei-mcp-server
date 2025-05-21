@@ -1,10 +1,10 @@
 import { describe, test, expect, mock, beforeEach, afterEach } from 'bun:test';
-import { 
-  transferSei, 
-  transferERC20, 
-  approveERC20, 
-  transferERC721, 
-  transferERC1155 
+import {
+  transferSei,
+  transferERC20,
+  approveERC20,
+  transferERC721,
+  transferERC1155
 } from '../../../core/services/transfer.js';
 import { getPublicClient, getWalletClient } from '../../../core/services/clients.js';
 import { getPrivateKeyAsHex } from '../../../core/config.js';
@@ -41,7 +41,7 @@ describe('Transfer Service', () => {
   beforeEach(() => {
     // Reset all mocks before each test
     mock.restore();
-    
+
     // Setup default mock implementations
     (getPublicClient as any).mockReturnValue(mockPublicClient);
     (getWalletClient as any).mockReturnValue(mockWalletClient);
@@ -197,4 +197,4 @@ describe('Transfer Service', () => {
       });
     });
   });
-}); 
+});

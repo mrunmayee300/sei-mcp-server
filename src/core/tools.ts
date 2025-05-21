@@ -225,7 +225,7 @@ export function registerEVMTools(server: McpServer) {
     "get_token_balance",
     "Get the balance of an ERC20 token for an address",
     {
-      tokenAddress: z.string().describe("The contract address name of the ERC20 token (e.g., '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')"),
+      tokenAddress: z.string().describe("The contract address name of the ERC20 token (e.g., '0x3894085Ef7Ff0f0aeDf52E2A2704928d1Ec074F1')"),
       ownerAddress: z.string().describe("The wallet address name to check the balance for (e.g., '0x1234...')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
     },
@@ -500,7 +500,7 @@ export function registerEVMTools(server: McpServer) {
     "transfer_nft",
     "Transfer an NFT (ERC721 token) from one address to another. Requires the private key of the current owner for signing the transaction.",
     {
-      tokenAddress: z.string().describe("The contract address of the NFT collection (e.g., '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D' for Bored Ape Yacht Club)"),
+      tokenAddress: z.string().describe("The contract address of the NFT collection (e.g., '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D')"),
       tokenId: z.string().describe("The ID of the specific NFT to transfer (e.g., '1234')"),
       toAddress: z.string().describe("The recipient wallet address that will receive the NFT"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Most NFTs are on Sei mainnet, which is the default.")
@@ -846,7 +846,7 @@ export function registerEVMTools(server: McpServer) {
     "get_nft_info",
     "Get detailed information about a specific NFT (ERC721 token), including collection name, symbol, token URI, and current owner if available.",
     {
-      tokenAddress: z.string().describe("The contract address of the NFT collection (e.g., '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D' for Bored Ape Yacht Club)"),
+      tokenAddress: z.string().describe("The contract address of the NFT collection (e.g., '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D')"),
       tokenId: z.string().describe("The ID of the specific NFT token to query (e.g., '1234')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', ) or chain ID. Most NFTs are on Sei mainnet, which is the default.")
     },
@@ -951,7 +951,7 @@ export function registerEVMTools(server: McpServer) {
     "get_erc1155_token_uri",
     "Get the metadata URI for an ERC1155 token (multi-token standard used for both fungible and non-fungible tokens). The URI typically points to JSON metadata about the token.",
     {
-      tokenAddress: z.string().describe("The contract address of the ERC1155 token collection (e.g., '0x76BE3b62873462d2142405439777e971754E8E77')"),
+      tokenAddress: z.string().describe("The contract address of the ERC1155 token collection (e.g., '0x5B6D32f2B55b62da7a8cd553857EB6Dc26bFDC63')"),
       tokenId: z.string().describe("The ID of the specific token to query metadata for (e.g., '1234')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. ERC1155 tokens exist across many networks. Defaults to Sei mainnet.")
     },
@@ -991,7 +991,7 @@ export function registerEVMTools(server: McpServer) {
     "get_nft_balance",
     "Get the total number of NFTs owned by an address from a specific collection. This returns the count of NFTs, not individual token IDs.",
     {
-      tokenAddress: z.string().describe("The contract address of the NFT collection (e.g., '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D' for Bored Ape Yacht Club)"),
+      tokenAddress: z.string().describe("The contract address of the NFT collection (e.g., '0x5B6D32f2B55b62da7a8cd553857EB6Dc26bFDC63')"),
       ownerAddress: z.string().describe("The wallet address to check the NFT balance for (e.g., '0x1234...')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Most NFTs are on Sei mainnet, which is the default.")
     },
@@ -1031,7 +1031,7 @@ export function registerEVMTools(server: McpServer) {
     "get_erc1155_balance",
     "Get the balance of a specific ERC1155 token ID owned by an address. ERC1155 allows multiple tokens of the same ID, so the balance can be greater than 1.",
     {
-      tokenAddress: z.string().describe("The contract address of the ERC1155 token collection (e.g., '0x76BE3b62873462d2142405439777e971754E8E77')"),
+      tokenAddress: z.string().describe("The contract address of the ERC1155 token collection (e.g., '0x5B6D32f2B55b62da7a8cd553857EB6Dc26bFDC63')"),
       tokenId: z.string().describe("The ID of the specific token to check the balance for (e.g., '1234')"),
       ownerAddress: z.string().describe("The wallet address to check the token balance for (e.g., '0x1234...')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. ERC1155 tokens exist across many networks. Defaults to Sei mainnet.")
