@@ -180,7 +180,7 @@ export function registerEVMResources(server: McpServer) {
     }
   );
 
-  // Get ETH balance for a specific network
+  // Get native token balance for a specific network
   server.resource(
     "evm_address_native_balance",
     new ResourceTemplate("evm://{network}/address/{address}/balance", { list: undefined }),
@@ -214,10 +214,10 @@ export function registerEVMResources(server: McpServer) {
     }
   );
 
-  // Default ETH balance (Sei mainnet)
+  // Default Sei balance (Sei mainnet)
   server.resource(
     "default_sei_balance",
-    new ResourceTemplate("evm://address/{address}/eth-balance", { list: undefined }),
+    new ResourceTemplate("evm://address/{address}/sei-balance", { list: undefined }),
     async (uri, params) => {
       try {
         const network = "sei";

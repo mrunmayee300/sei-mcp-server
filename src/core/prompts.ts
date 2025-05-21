@@ -46,7 +46,7 @@ export function registerEVMPrompts(server: McpServer) {
     })
   );
 
-  // Address analysis prompt
+  // Get wallet address from private key prompt
   server.prompt(
       "my_wallet_address",
       "What is my wallet EVM address",
@@ -136,7 +136,7 @@ export function registerEVMPrompts(server: McpServer) {
           role: "user",
           content: {
             type: "text",
-            text: `Please compare the following Sei networks: ${networks.join(', ')}. Include information about their architecture, gas fees, transaction speed, security, and any other relevant differences.`
+            text: `Please compare the following Sei networks: ${networks.join(', ')}. Include information about their gas fees, transaction speed, security, and any other relevant differences.`
           }
         }]
       };

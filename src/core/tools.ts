@@ -146,7 +146,7 @@ export function registerEVMTools(server: McpServer) {
     "get_balance",
     "Get the native token balance (Sei) for an address",
     {
-      address: z.string().describe("The wallet address name (e.g., '0x1234...' or 'vitalik.eth') to check the balance for"),
+      address: z.string().describe("The wallet address name (e.g., '0x1234...') to check the balance for"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
     },
     async ({ address, network = "sei" }) => {
@@ -226,7 +226,7 @@ export function registerEVMTools(server: McpServer) {
     "Get the balance of an ERC20 token for an address",
     {
       tokenAddress: z.string().describe("The contract address name of the ERC20 token (e.g., '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')"),
-      ownerAddress: z.string().describe("The wallet address name to check the balance for (e.g., '0x1234...' or 'vitalik.eth')"),
+      ownerAddress: z.string().describe("The wallet address name to check the balance for (e.g., '0x1234...')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
     },
     async ({ tokenAddress, ownerAddress, network = "sei" }) => {
@@ -373,7 +373,7 @@ export function registerEVMTools(server: McpServer) {
     "transfer_sei",
     "Transfer native tokens (Sei) to an address",
     {
-      to: z.string().describe("The recipient address or ENS name (e.g., '0x1234...' or 'vitalik.eth')"),
+      to: z.string().describe("The recipient address (e.g., '0x1234...'"),
       amount: z.string().describe("Amount to send in SEI (or the native token of the network), as a string (e.g., '0.1')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Defaults to Sei mainnet.")
     },
@@ -455,7 +455,7 @@ export function registerEVMTools(server: McpServer) {
     "approve_token_spending",
     "Approve another address (like a DeFi protocol or exchange) to spend your ERC20 tokens. This is often required before interacting with DeFi protocols.",
     {
-      tokenAddress: z.string().describe("The contract address of the ERC20 token to approve for spending (e.g., '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' for USDC)"),
+      tokenAddress: z.string().describe("The contract address of the ERC20 token to approve for spending (e.g., '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')"),
       spenderAddress: z.string().describe("The contract address being approved to spend your tokens (e.g., a DEX or lending protocol)"),
       amount: z.string().describe("The amount of tokens to approve in token units, not wei (e.g., '1000' to approve spending 1000 tokens). Use a very large number for unlimited approval."),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Defaults to Sei mainnet.")
@@ -593,8 +593,8 @@ export function registerEVMTools(server: McpServer) {
     "transfer_token",
     "Transfer ERC20 tokens to an address",
     {
-      tokenAddress: z.string().describe("The contract address or ENS name of the ERC20 token to transfer (e.g., '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' for USDC or 'uniswap.eth')"),
-      toAddress: z.string().describe("The recipient address or ENS name that will receive the tokens (e.g., '0x1234...' or 'vitalik.eth')"),
+      tokenAddress: z.string().describe("The contract address of the ERC20 token to transfer (e.g., '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')"),
+      toAddress: z.string().describe("The recipient address that will receive the tokens (e.g., '0x1234...')"),
       amount: z.string().describe("Amount of tokens to send as a string (e.g., '100' for 100 tokens). This will be adjusted for the token's decimals."),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
     },
@@ -733,7 +733,7 @@ export function registerEVMTools(server: McpServer) {
     "is_contract",
     "Check if an address is a smart contract or an externally owned account (EOA)",
     {
-      address: z.string().describe("The wallet or contract address to check (e.g., '0x1234...' or 'uniswap.eth')"),
+      address: z.string().describe("The wallet or contract address to check (e.g., '0x1234...')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
     },
     async ({ address, network = "sei" }) => {
@@ -907,9 +907,9 @@ export function registerEVMTools(server: McpServer) {
     "check_nft_ownership",
     "Check if an address owns a specific NFT",
     {
-      tokenAddress: z.string().describe("The contract address of the NFT collection (e.g., '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D' for BAYC or 'boredapeyachtclub.eth')"),
+      tokenAddress: z.string().describe("The contract address of the NFT collection (e.g., '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D')"),
       tokenId: z.string().describe("The ID of the NFT to check (e.g., '1234')"),
-      ownerAddress: z.string().describe("The wallet address to check ownership against (e.g., '0x1234...' or 'vitalik.eth')"),
+      ownerAddress: z.string().describe("The wallet address to check ownership against (e.g., '0x1234...')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet' etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
     },
     async ({ tokenAddress, tokenId, ownerAddress, network = "sei" }) => {
