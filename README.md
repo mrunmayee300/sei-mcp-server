@@ -179,10 +179,10 @@ You can run the Sei MCP Server directly without installation using npx:
 
 ```bash
 # Run the server in stdio mode (for CLI tools)
-npx @sei-js/sei-mcp-server
+npx @sei-protocol/sei-mcp-server
 
 # Run the server in HTTP mode (for web applications)
-npx @sei-js/sei-mcp-server --http
+npx @sei-protocol/sei-mcp-server --http
 ```
 
 ### Running the Server Locally
