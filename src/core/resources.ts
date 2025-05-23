@@ -1,5 +1,5 @@
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { getSupportedNetworks, getRpcUrl } from "./chains.js";
+import {getSupportedNetworks, getRpcUrl, DEFAULT_NETWORK} from "./chains.js";
 import * as services from "./services/index.js";
 import type { Address, Hash } from "viem";
 
@@ -10,7 +10,7 @@ import type { Address, Hash } from "viem";
 export function registerEVMResources(server: McpServer) {
   // Get EVM info for a specific network
   server.resource(
-    "chain_info_by_network", 
+    "chain_info_by_network",
     new ResourceTemplate("evm://{network}/chain", { list: undefined }),
     async (uri, params) => {
       try {
@@ -18,7 +18,7 @@ export function registerEVMResources(server: McpServer) {
         const chainId = await services.getChainId(network);
         const blockNumber = await services.getBlockNumber(network);
         const rpcUrl = getRpcUrl(network);
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -41,17 +41,17 @@ export function registerEVMResources(server: McpServer) {
     }
   );
 
-  // Default chain info (Ethereum mainnet)
+  // Default chain info (Sei mainnet)
   server.resource(
-    "ethereum_chain_info", 
+    "sei_chain_info",
     "evm://chain",
     async (uri) => {
       try {
-        const network = "ethereum";
+        const network = DEFAULT_NETWORK;
         const chainId = await services.getChainId(network);
         const blockNumber = await services.getBlockNumber(network);
         const rpcUrl = getRpcUrl(network);
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -83,7 +83,7 @@ export function registerEVMResources(server: McpServer) {
         const network = params.network as string;
         const blockNumber = params.blockNumber as string;
         const block = await services.getBlockByNumber(parseInt(blockNumber), network);
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -110,7 +110,7 @@ export function registerEVMResources(server: McpServer) {
         const network = params.network as string;
         const blockHash = params.blockHash as string;
         const block = await services.getBlockByHash(blockHash as Hash, network);
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -136,7 +136,7 @@ export function registerEVMResources(server: McpServer) {
       try {
         const network = params.network as string;
         const block = await services.getLatestBlock(network);
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -154,15 +154,15 @@ export function registerEVMResources(server: McpServer) {
     }
   );
 
-  // Default latest block (Ethereum mainnet)
+  // Default latest block (Sei mainnet)
   server.resource(
     "default_latest_block",
     "evm://block/latest",
     async (uri) => {
       try {
-        const network = "ethereum";
+        const network = DEFAULT_NETWORK;
         const block = await services.getLatestBlock(network);
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -180,7 +180,7 @@ export function registerEVMResources(server: McpServer) {
     }
   );
 
-  // Get ETH balance for a specific network
+  // Get native token balance for a specific network
   server.resource(
     "evm_address_native_balance",
     new ResourceTemplate("evm://{network}/address/{address}/balance", { list: undefined }),
@@ -188,8 +188,8 @@ export function registerEVMResources(server: McpServer) {
       try {
         const network = params.network as string;
         const address = params.address as string;
-        const balance = await services.getETHBalance(address as Address, network);
-        
+        const balance = await services.getBalance(address as Address, network);
+
         return {
           contents: [{
             uri: uri.href,
@@ -198,7 +198,7 @@ export function registerEVMResources(server: McpServer) {
               address,
               balance: {
                 wei: balance.wei.toString(),
-                ether: balance.ether
+                ether: balance.sei
               }
             }, null, 2)
           }]
@@ -207,23 +207,23 @@ export function registerEVMResources(server: McpServer) {
         return {
           contents: [{
             uri: uri.href,
-            text: `Error fetching ETH balance: ${error instanceof Error ? error.message : String(error)}`
+            text: `Error fetching Sei balance: ${error instanceof Error ? error.message : String(error)}`
           }]
         };
       }
     }
   );
 
-  // Default ETH balance (Ethereum mainnet)
+  // Default Sei balance (Sei mainnet)
   server.resource(
-    "default_eth_balance",
-    new ResourceTemplate("evm://address/{address}/eth-balance", { list: undefined }),
+    "default_sei_balance",
+    new ResourceTemplate("evm://address/{address}/sei-balance", { list: undefined }),
     async (uri, params) => {
       try {
-        const network = "ethereum";
+        const network = DEFAULT_NETWORK;
         const address = params.address as string;
-        const balance = await services.getETHBalance(address as Address, network);
-        
+        const balance = await services.getBalance(address as Address, network);
+
         return {
           contents: [{
             uri: uri.href,
@@ -232,7 +232,7 @@ export function registerEVMResources(server: McpServer) {
               address,
               balance: {
                 wei: balance.wei.toString(),
-                ether: balance.ether
+                ether: balance.sei
               }
             }, null, 2)
           }]
@@ -241,7 +241,7 @@ export function registerEVMResources(server: McpServer) {
         return {
           contents: [{
             uri: uri.href,
-            text: `Error fetching ETH balance: ${error instanceof Error ? error.message : String(error)}`
+            text: `Error fetching Sei balance: ${error instanceof Error ? error.message : String(error)}`
           }]
         };
       }
@@ -257,13 +257,13 @@ export function registerEVMResources(server: McpServer) {
         const network = params.network as string;
         const address = params.address as string;
         const tokenAddress = params.tokenAddress as string;
-        
+
         const balance = await services.getERC20Balance(
           tokenAddress as Address,
           address as Address,
           network
         );
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -290,22 +290,22 @@ export function registerEVMResources(server: McpServer) {
     }
   );
 
-  // Default ERC20 balance (Ethereum mainnet)
+  // Default ERC20 balance (Sei mainnet)
   server.resource(
     "default_erc20_balance",
     new ResourceTemplate("evm://address/{address}/token/{tokenAddress}/balance", { list: undefined }),
     async (uri, params) => {
       try {
-        const network = "ethereum";
+        const network = DEFAULT_NETWORK;
         const address = params.address as string;
         const tokenAddress = params.tokenAddress as string;
-        
+
         const balance = await services.getERC20Balance(
           tokenAddress as Address,
           address as Address,
           network
         );
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -341,7 +341,7 @@ export function registerEVMResources(server: McpServer) {
         const network = params.network as string;
         const txHash = params.txHash as string;
         const tx = await services.getTransaction(txHash as Hash, network);
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -359,16 +359,16 @@ export function registerEVMResources(server: McpServer) {
     }
   );
 
-  // Default transaction by hash (Ethereum mainnet)
+  // Default transaction by hash (Sei mainnet)
   server.resource(
     "default_transaction_by_hash",
     new ResourceTemplate("evm://tx/{txHash}", { list: undefined }),
     async (uri, params) => {
       try {
-        const network = "ethereum";
+        const network = DEFAULT_NETWORK;
         const txHash = params.txHash as string;
         const tx = await services.getTransaction(txHash as Hash, network);
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -393,7 +393,7 @@ export function registerEVMResources(server: McpServer) {
     async (uri) => {
       try {
         const networks = getSupportedNetworks();
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -421,9 +421,9 @@ export function registerEVMResources(server: McpServer) {
       try {
         const network = params.network as string;
         const tokenAddress = params.tokenAddress as Address;
-        
+
         const tokenInfo = await services.getERC20TokenInfo(tokenAddress, network);
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -454,9 +454,9 @@ export function registerEVMResources(server: McpServer) {
         const network = params.network as string;
         const tokenAddress = params.tokenAddress as Address;
         const address = params.address as Address;
-        
+
         const balance = await services.getERC20Balance(tokenAddress, address, network);
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -491,9 +491,9 @@ export function registerEVMResources(server: McpServer) {
         const network = params.network as string;
         const tokenAddress = params.tokenAddress as Address;
         const tokenId = BigInt(params.tokenId as string);
-        
+
         const nftInfo = await services.getERC721TokenMetadata(tokenAddress, tokenId, network);
-        
+
         // Get owner separately
         let owner = "Unknown";
         try {
@@ -504,7 +504,7 @@ export function registerEVMResources(server: McpServer) {
         } catch (e) {
           // Owner info not available
         }
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -538,9 +538,9 @@ export function registerEVMResources(server: McpServer) {
         const tokenAddress = params.tokenAddress as Address;
         const tokenId = BigInt(params.tokenId as string);
         const address = params.address as Address;
-        
+
         const isOwner = await services.isNFTOwner(tokenAddress, address, tokenId, network);
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -573,9 +573,9 @@ export function registerEVMResources(server: McpServer) {
         const network = params.network as string;
         const tokenAddress = params.tokenAddress as Address;
         const tokenId = BigInt(params.tokenId as string);
-        
+
         const tokenURI = await services.getERC1155TokenURI(tokenAddress, tokenId, network);
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -608,9 +608,9 @@ export function registerEVMResources(server: McpServer) {
         const tokenAddress = params.tokenAddress as Address;
         const tokenId = BigInt(params.tokenId as string);
         const address = params.address as Address;
-        
+
         const balance = await services.getERC1155Balance(tokenAddress, address, tokenId, network);
-        
+
         return {
           contents: [{
             uri: uri.href,
@@ -633,4 +633,4 @@ export function registerEVMResources(server: McpServer) {
       }
     }
   );
-} 
+}

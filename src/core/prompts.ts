@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import {DEFAULT_NETWORK} from "./chains.js";
 
 /**
  * Register all EVM-related prompts with the MCP server
@@ -12,14 +13,14 @@ export function registerEVMPrompts(server: McpServer) {
     "Explore information about a specific block",
     {
       blockNumber: z.string().optional().describe("Block number to explore. If not provided, latest block will be used."),
-      network: z.string().optional().describe("Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Ethereum mainnet.")
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet' etc.) or chain ID. Supports all Sei networks. Defaults to Sei mainnet.")
     },
-    ({ blockNumber, network = "ethereum" }) => ({
+    ({ blockNumber, network = DEFAULT_NETWORK }) => ({
       messages: [{
         role: "user",
         content: {
           type: "text",
-          text: blockNumber 
+          text: blockNumber
             ? `Please analyze block #${blockNumber} on the ${network} network and provide information about its key metrics, transactions, and significance.`
             : `Please analyze the latest block on the ${network} network and provide information about its key metrics, transactions, and significance.`
         }
@@ -33,9 +34,9 @@ export function registerEVMPrompts(server: McpServer) {
     "Analyze a specific transaction",
     {
       txHash: z.string().describe("Transaction hash to analyze"),
-      network: z.string().optional().describe("Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Ethereum mainnet.")
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet' etc.) or chain ID. Supports all Sei networks. Defaults to Sei mainnet.")
     },
-    ({ txHash, network = "ethereum" }) => ({
+    ({ txHash, network = DEFAULT_NETWORK }) => ({
       messages: [{
         role: "user",
         content: {
@@ -46,15 +47,32 @@ export function registerEVMPrompts(server: McpServer) {
     })
   );
 
+  // Get wallet address from private key prompt
+  server.prompt(
+      "my_wallet_address",
+      "What is my wallet EVM address",
+      {
+      },
+      () => ({
+        messages: [{
+          role: "user",
+          content: {
+            type: "text",
+            text: `Please retrieve my wallet EVM address using tools get_address_from_private_key via MCP server.`
+          }
+        }]
+      })
+  );
+
   // Address analysis prompt
   server.prompt(
     "analyze_address",
     "Analyze an EVM address",
     {
-      address: z.string().describe("Ethereum address to analyze"),
-      network: z.string().optional().describe("Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Ethereum mainnet.")
+      address: z.string().describe("Sei 0x address to analyze"),
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet' etc.) or chain ID. Supports all Sei networks. Defaults to Sei mainnet.")
     },
-    ({ address, network = "ethereum" }) => ({
+    ({ address, network = DEFAULT_NETWORK }) => ({
       messages: [{
         role: "user",
         content: {
@@ -72,9 +90,9 @@ export function registerEVMPrompts(server: McpServer) {
     {
       contractAddress: z.string().describe("The contract address"),
       abiJson: z.string().optional().describe("The contract ABI as a JSON string"),
-      network: z.string().optional().describe("Network name or chain ID. Defaults to Ethereum mainnet.")
+      network: z.string().optional().describe("Network name or chain ID. Defaults to Sei mainnet.")
     },
-    ({ contractAddress, abiJson, network = "ethereum" }) => ({
+    ({ contractAddress, abiJson, network = DEFAULT_NETWORK }) => ({
       messages: [{
         role: "user",
         content: {
@@ -108,9 +126,9 @@ export function registerEVMPrompts(server: McpServer) {
   // Network comparison
   server.prompt(
     "compare_networks",
-    "Compare different EVM-compatible networks",
+    "Compare Sei networks",
     {
-      networkList: z.string().describe("Comma-separated list of networks to compare (e.g., 'ethereum,optimism,arbitrum')")
+      networkList: z.string().describe("Comma-separated list of networks to compare (e.g., 'sei,sei-testnet,sei-devnet')")
     },
     ({ networkList }) => {
       const networks = networkList.split(',').map(n => n.trim());
@@ -119,7 +137,7 @@ export function registerEVMPrompts(server: McpServer) {
           role: "user",
           content: {
             type: "text",
-            text: `Please compare the following EVM-compatible networks: ${networks.join(', ')}. Include information about their architecture, gas fees, transaction speed, security, and any other relevant differences.`
+            text: `Please compare the following Sei networks: ${networks.join(', ')}. Include information about their gas fees, transaction speed, security, and any other relevant differences.`
           }
         }]
       };
@@ -134,11 +152,11 @@ export function registerEVMPrompts(server: McpServer) {
       tokenAddress: z.string().describe("Token contract address to analyze"),
       tokenType: z.string().optional().describe("Type of token to analyze (erc20, erc721/nft, or auto-detect). Defaults to auto."),
       tokenId: z.string().optional().describe("Token ID (required for NFT analysis)"),
-      network: z.string().optional().describe("Network name (e.g., 'ethereum', 'optimism', 'arbitrum', 'base', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Ethereum mainnet.")
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all Sei networks. Defaults to Sei mainnet.")
     },
-    ({ tokenAddress, tokenType = "auto", tokenId, network = "ethereum" }) => {
+    ({ tokenAddress, tokenType = "auto", tokenId, network = DEFAULT_NETWORK }) => {
       let promptText = "";
-      
+
       if (tokenType === "erc20" || tokenType === "auto") {
         promptText = `Please analyze the ERC20 token at address ${tokenAddress} on the ${network} network. Provide information about its name, symbol, total supply, and any other relevant details. If possible, explain the token's purpose, utility, and market context.`;
       } else if ((tokenType === "erc721" || tokenType === "nft") && tokenId) {
@@ -159,4 +177,4 @@ export function registerEVMPrompts(server: McpServer) {
     }
   );
 
-} 
+}
