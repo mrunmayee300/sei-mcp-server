@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { getSupportedNetworks, getRpcUrl } from "./chains.js";
+import {getSupportedNetworks, getRpcUrl, DEFAULT_NETWORK} from "./chains.js";
 import * as services from "./services/index.js";
 import {type Address, type Hex, type Hash, WriteContractParameters, Abi} from 'viem';
 import { getPrivateKeyAsHex } from "./config.js";
@@ -18,9 +18,9 @@ export function registerEVMTools(server: McpServer) {
     "get_chain_info",
     "Get information about Sei network",
     {
-      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all Sei networks. Defaults to Sei mainnet.")
     },
-    async ({ network = "sei" }) => {
+    async ({ network = DEFAULT_NETWORK }) => {
       try {
         const chainId = await services.getChainId(network);
         const blockNumber = await services.getBlockNumber(network);
@@ -88,7 +88,7 @@ export function registerEVMTools(server: McpServer) {
       blockNumber: z.number().describe("The block number to fetch"),
       network: z.string().optional().describe("Network name or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ blockNumber, network = "sei" }) => {
+    async ({ blockNumber, network = DEFAULT_NETWORK }) => {
       try {
         const block = await services.getBlockByNumber(blockNumber, network);
 
@@ -117,7 +117,7 @@ export function registerEVMTools(server: McpServer) {
     {
       network: z.string().optional().describe("Network name or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ network = "sei" }) => {
+    async ({ network = DEFAULT_NETWORK }) => {
       try {
         const block = await services.getLatestBlock(network);
 
@@ -147,9 +147,9 @@ export function registerEVMTools(server: McpServer) {
     "Get the native token balance (Sei) for an address",
     {
       address: z.string().describe("The wallet address name (e.g., '0x1234...') to check the balance for"),
-      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all Sei networks. Defaults to Sei mainnet.")
     },
-    async ({ address, network = "sei" }) => {
+    async ({ address, network = DEFAULT_NETWORK }) => {
       try {
         const balance = await services.getBalance(address, network);
 
@@ -160,7 +160,7 @@ export function registerEVMTools(server: McpServer) {
               address,
               network,
               wei: balance.wei.toString(),
-              ether: balance.ether
+              ether: balance.sei
             }, null, 2)
           }]
         };
@@ -185,7 +185,7 @@ export function registerEVMTools(server: McpServer) {
       tokenAddress: z.string().describe("The ERC20 token contract address"),
       network: z.string().optional().describe("Network name or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ address, tokenAddress, network = "sei" }) => {
+    async ({ address, tokenAddress, network = DEFAULT_NETWORK }) => {
       try {
         const balance = await services.getERC20Balance(
           tokenAddress as Address,
@@ -227,9 +227,9 @@ export function registerEVMTools(server: McpServer) {
     {
       tokenAddress: z.string().describe("The contract address name of the ERC20 token (e.g., '0x3894085Ef7Ff0f0aeDf52E2A2704928d1Ec074F1')"),
       ownerAddress: z.string().describe("The wallet address name to check the balance for (e.g., '0x1234...')"),
-      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all Sei networks. Defaults to Sei mainnet.")
     },
-    async ({ tokenAddress, ownerAddress, network = "sei" }) => {
+    async ({ tokenAddress, ownerAddress, network = DEFAULT_NETWORK }) => {
       try {
         const balance = await services.getERC20Balance(tokenAddress, ownerAddress, network);
 
@@ -269,7 +269,7 @@ export function registerEVMTools(server: McpServer) {
       txHash: z.string().describe("The transaction hash to look up (e.g., '0x1234...')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ txHash, network = "sei" }) => {
+    async ({ txHash, network = DEFAULT_NETWORK }) => {
       try {
         const tx = await services.getTransaction(txHash as Hash, network);
 
@@ -299,7 +299,7 @@ export function registerEVMTools(server: McpServer) {
       txHash: z.string().describe("The transaction hash to look up"),
       network: z.string().optional().describe("Network name or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ txHash, network = "sei" }) => {
+    async ({ txHash, network = DEFAULT_NETWORK }) => {
       try {
         const receipt = await services.getTransactionReceipt(txHash as Hash, network);
 
@@ -331,7 +331,7 @@ export function registerEVMTools(server: McpServer) {
       data: z.string().optional().describe("The transaction data as a hex string"),
       network: z.string().optional().describe("Network name or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ to, value, data, network = "sei" }) => {
+    async ({ to, value, data, network = DEFAULT_NETWORK }) => {
       try {
         const params: any = { to: to as Address };
 
@@ -377,7 +377,7 @@ export function registerEVMTools(server: McpServer) {
       amount: z.string().describe("Amount to send in SEI (or the native token of the network), as a string (e.g., '0.1')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ to, amount, network = "sei" }) => {
+    async ({ to, amount, network = DEFAULT_NETWORK }) => {
       try {
         const txHash = await services.transferSei(to, amount, network);
 
@@ -415,7 +415,7 @@ export function registerEVMTools(server: McpServer) {
       amount: z.string().describe("The amount of tokens to send (in token units, e.g., '10' for 10 tokens)"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ tokenAddress, toAddress, amount, network = "sei" }) => {
+    async ({ tokenAddress, toAddress, amount, network = DEFAULT_NETWORK }) => {
       try {
         const result = await services.transferERC20(
           tokenAddress,
@@ -460,7 +460,7 @@ export function registerEVMTools(server: McpServer) {
       amount: z.string().describe("The amount of tokens to approve in token units, not wei (e.g., '1000' to approve spending 1000 tokens). Use a very large number for unlimited approval."),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ tokenAddress, spenderAddress, amount, network = "sei" }) => {
+    async ({ tokenAddress, spenderAddress, amount, network = DEFAULT_NETWORK }) => {
       try {
         const result = await services.approveERC20(
           tokenAddress,
@@ -505,7 +505,7 @@ export function registerEVMTools(server: McpServer) {
       toAddress: z.string().describe("The recipient wallet address that will receive the NFT"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Most NFTs are on Sei mainnet, which is the default.")
     },
-    async ({ tokenAddress, tokenId, toAddress, network = "sei" }) => {
+    async ({ tokenAddress, tokenId, toAddress, network = DEFAULT_NETWORK }) => {
       try {
         const result = await services.transferERC721(
           tokenAddress,
@@ -552,7 +552,7 @@ export function registerEVMTools(server: McpServer) {
       toAddress: z.string().describe("The recipient wallet address that will receive the tokens"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. ERC1155 tokens exist across many networks. Defaults to Sei mainnet.")
     },
-    async ({ tokenAddress, tokenId, amount, toAddress, network = "sei" }) => {
+    async ({ tokenAddress, tokenId, amount, toAddress, network = DEFAULT_NETWORK }) => {
       try {
         const result = await services.transferERC1155(
           tokenAddress,
@@ -596,9 +596,9 @@ export function registerEVMTools(server: McpServer) {
       tokenAddress: z.string().describe("The contract address of the ERC20 token to transfer (e.g., '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')"),
       toAddress: z.string().describe("The recipient address that will receive the tokens (e.g., '0x1234...')"),
       amount: z.string().describe("Amount of tokens to send as a string (e.g., '100' for 100 tokens). This will be adjusted for the token's decimals."),
-      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Supports all Sei networks. Defaults to Sei mainnet.")
     },
-    async ({ tokenAddress, toAddress, amount, network = "sei" }) => {
+    async ({ tokenAddress, toAddress, amount, network = DEFAULT_NETWORK }) => {
       try {
         const result = await services.transferERC20(
           tokenAddress,
@@ -646,7 +646,7 @@ export function registerEVMTools(server: McpServer) {
       args: z.array(z.any()).optional().describe("The arguments to pass to the function, as an array (e.g., ['0x1234...'])"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ contractAddress, abi, functionName, args = [], network = "sei" }) => {
+    async ({ contractAddress, abi, functionName, args = [], network = DEFAULT_NETWORK }) => {
       try {
         // Parse ABI if it's a string
         const parsedAbi = typeof abi === 'string' ? JSON.parse(abi) : abi;
@@ -689,7 +689,7 @@ export function registerEVMTools(server: McpServer) {
       args: z.array(z.any()).describe("The arguments to pass to the function, as an array (e.g., ['0x1234...', '1000000000000000000'])"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ contractAddress, abi, functionName, args, network = "sei" }) => {
+    async ({ contractAddress, abi, functionName, args, network = DEFAULT_NETWORK }) => {
       try {
         // Parse ABI if it's a string
         const parsedAbi = typeof abi === 'string' ? JSON.parse(abi) : abi;
@@ -734,9 +734,9 @@ export function registerEVMTools(server: McpServer) {
     "Check if an address is a smart contract or an externally owned account (EOA)",
     {
       address: z.string().describe("The wallet or contract address to check (e.g., '0x1234...')"),
-      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all Sei networks. Defaults to Sei mainnet.")
     },
-    async ({ address, network = "sei" }) => {
+    async ({ address, network = DEFAULT_NETWORK }) => {
       try {
         const isContract = await services.isContract(address, network);
 
@@ -771,7 +771,7 @@ export function registerEVMTools(server: McpServer) {
       tokenAddress: z.string().describe("The contract address of the ERC20 token (e.g., '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ tokenAddress, network = "sei" }) => {
+    async ({ tokenAddress, network = DEFAULT_NETWORK }) => {
       try {
         const tokenInfo = await services.getERC20TokenInfo(tokenAddress as Address, network);
 
@@ -806,7 +806,7 @@ export function registerEVMTools(server: McpServer) {
       tokenAddress: z.string().describe("The ERC20 token contract address"),
       network: z.string().optional().describe("Network name or chain ID. Defaults to Sei mainnet.")
     },
-    async ({ address, tokenAddress, network = "sei" }) => {
+    async ({ address, tokenAddress, network = DEFAULT_NETWORK }) => {
       try {
         const balance = await services.getERC20Balance(
           tokenAddress as Address,
@@ -850,7 +850,7 @@ export function registerEVMTools(server: McpServer) {
       tokenId: z.string().describe("The ID of the specific NFT token to query (e.g., '1234')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', ) or chain ID. Most NFTs are on Sei mainnet, which is the default.")
     },
-    async ({ tokenAddress, tokenId, network = "sei" }) => {
+    async ({ tokenAddress, tokenId, network = DEFAULT_NETWORK }) => {
       try {
         const nftInfo = await services.getERC721TokenMetadata(
           tokenAddress as Address,
@@ -910,9 +910,9 @@ export function registerEVMTools(server: McpServer) {
       tokenAddress: z.string().describe("The contract address of the NFT collection (e.g., '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D')"),
       tokenId: z.string().describe("The ID of the NFT to check (e.g., '1234')"),
       ownerAddress: z.string().describe("The wallet address to check ownership against (e.g., '0x1234...')"),
-      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet' etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet' etc.) or chain ID. Supports all Sei networks. Defaults to Sei mainnet.")
     },
-    async ({ tokenAddress, tokenId, ownerAddress, network = "sei" }) => {
+    async ({ tokenAddress, tokenId, ownerAddress, network = DEFAULT_NETWORK }) => {
       try {
         const isOwner = await services.isNFTOwner(
           tokenAddress,
@@ -955,7 +955,7 @@ export function registerEVMTools(server: McpServer) {
       tokenId: z.string().describe("The ID of the specific token to query metadata for (e.g., '1234')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. ERC1155 tokens exist across many networks. Defaults to Sei mainnet.")
     },
-    async ({ tokenAddress, tokenId, network = "sei" }) => {
+    async ({ tokenAddress, tokenId, network = DEFAULT_NETWORK }) => {
       try {
         const uri = await services.getERC1155TokenURI(
           tokenAddress as Address,
@@ -995,7 +995,7 @@ export function registerEVMTools(server: McpServer) {
       ownerAddress: z.string().describe("The wallet address to check the NFT balance for (e.g., '0x1234...')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. Most NFTs are on Sei mainnet, which is the default.")
     },
-    async ({ tokenAddress, ownerAddress, network = "sei" }) => {
+    async ({ tokenAddress, ownerAddress, network = DEFAULT_NETWORK }) => {
       try {
         const balance = await services.getERC721Balance(
           tokenAddress as Address,
@@ -1036,7 +1036,7 @@ export function registerEVMTools(server: McpServer) {
       ownerAddress: z.string().describe("The wallet address to check the token balance for (e.g., '0x1234...')"),
       network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet') or chain ID. ERC1155 tokens exist across many networks. Defaults to Sei mainnet.")
     },
-    async ({ tokenAddress, tokenId, ownerAddress, network = "sei" }) => {
+    async ({ tokenAddress, tokenId, ownerAddress, network = DEFAULT_NETWORK }) => {
       try {
         const balance = await services.getERC1155Balance(
           tokenAddress as Address,

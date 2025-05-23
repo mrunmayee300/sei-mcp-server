@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import {DEFAULT_NETWORK} from "./chains.js";
 
 /**
  * Register all EVM-related prompts with the MCP server
@@ -12,9 +13,9 @@ export function registerEVMPrompts(server: McpServer) {
     "Explore information about a specific block",
     {
       blockNumber: z.string().optional().describe("Block number to explore. If not provided, latest block will be used."),
-      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet' etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet' etc.) or chain ID. Supports all Sei networks. Defaults to Sei mainnet.")
     },
-    ({ blockNumber, network = "sei" }) => ({
+    ({ blockNumber, network = DEFAULT_NETWORK }) => ({
       messages: [{
         role: "user",
         content: {
@@ -33,9 +34,9 @@ export function registerEVMPrompts(server: McpServer) {
     "Analyze a specific transaction",
     {
       txHash: z.string().describe("Transaction hash to analyze"),
-      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet' etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet' etc.) or chain ID. Supports all Sei networks. Defaults to Sei mainnet.")
     },
-    ({ txHash, network = "sei" }) => ({
+    ({ txHash, network = DEFAULT_NETWORK }) => ({
       messages: [{
         role: "user",
         content: {
@@ -69,9 +70,9 @@ export function registerEVMPrompts(server: McpServer) {
     "Analyze an EVM address",
     {
       address: z.string().describe("Sei 0x address to analyze"),
-      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet' etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet' etc.) or chain ID. Supports all Sei networks. Defaults to Sei mainnet.")
     },
-    ({ address, network = "sei" }) => ({
+    ({ address, network = DEFAULT_NETWORK }) => ({
       messages: [{
         role: "user",
         content: {
@@ -91,7 +92,7 @@ export function registerEVMPrompts(server: McpServer) {
       abiJson: z.string().optional().describe("The contract ABI as a JSON string"),
       network: z.string().optional().describe("Network name or chain ID. Defaults to Sei mainnet.")
     },
-    ({ contractAddress, abiJson, network = "sei" }) => ({
+    ({ contractAddress, abiJson, network = DEFAULT_NETWORK }) => ({
       messages: [{
         role: "user",
         content: {
@@ -151,9 +152,9 @@ export function registerEVMPrompts(server: McpServer) {
       tokenAddress: z.string().describe("Token contract address to analyze"),
       tokenType: z.string().optional().describe("Type of token to analyze (erc20, erc721/nft, or auto-detect). Defaults to auto."),
       tokenId: z.string().optional().describe("Token ID (required for NFT analysis)"),
-      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all EVM-compatible networks. Defaults to Sei mainnet.")
+      network: z.string().optional().describe("Network name (e.g., 'sei', 'sei-testnet', 'sei-devnet', etc.) or chain ID. Supports all Sei networks. Defaults to Sei mainnet.")
     },
-    ({ tokenAddress, tokenType = "auto", tokenId, network = "sei" }) => {
+    ({ tokenAddress, tokenType = "auto", tokenId, network = DEFAULT_NETWORK }) => {
       let promptText = "";
 
       if (tokenType === "erc20" || tokenType === "auto") {

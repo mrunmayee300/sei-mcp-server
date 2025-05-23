@@ -1,5 +1,5 @@
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { getSupportedNetworks, getRpcUrl } from "./chains.js";
+import {getSupportedNetworks, getRpcUrl, DEFAULT_NETWORK} from "./chains.js";
 import * as services from "./services/index.js";
 import type { Address, Hash } from "viem";
 
@@ -47,7 +47,7 @@ export function registerEVMResources(server: McpServer) {
     "evm://chain",
     async (uri) => {
       try {
-        const network = "sei";
+        const network = DEFAULT_NETWORK;
         const chainId = await services.getChainId(network);
         const blockNumber = await services.getBlockNumber(network);
         const rpcUrl = getRpcUrl(network);
@@ -160,7 +160,7 @@ export function registerEVMResources(server: McpServer) {
     "evm://block/latest",
     async (uri) => {
       try {
-        const network = "sei";
+        const network = DEFAULT_NETWORK;
         const block = await services.getLatestBlock(network);
 
         return {
@@ -198,7 +198,7 @@ export function registerEVMResources(server: McpServer) {
               address,
               balance: {
                 wei: balance.wei.toString(),
-                ether: balance.ether
+                ether: balance.sei
               }
             }, null, 2)
           }]
@@ -220,7 +220,7 @@ export function registerEVMResources(server: McpServer) {
     new ResourceTemplate("evm://address/{address}/sei-balance", { list: undefined }),
     async (uri, params) => {
       try {
-        const network = "sei";
+        const network = DEFAULT_NETWORK;
         const address = params.address as string;
         const balance = await services.getBalance(address as Address, network);
 
@@ -232,7 +232,7 @@ export function registerEVMResources(server: McpServer) {
               address,
               balance: {
                 wei: balance.wei.toString(),
-                ether: balance.ether
+                ether: balance.sei
               }
             }, null, 2)
           }]
@@ -296,7 +296,7 @@ export function registerEVMResources(server: McpServer) {
     new ResourceTemplate("evm://address/{address}/token/{tokenAddress}/balance", { list: undefined }),
     async (uri, params) => {
       try {
-        const network = "sei";
+        const network = DEFAULT_NETWORK;
         const address = params.address as string;
         const tokenAddress = params.tokenAddress as string;
 
@@ -365,7 +365,7 @@ export function registerEVMResources(server: McpServer) {
     new ResourceTemplate("evm://tx/{txHash}", { list: undefined }),
     async (uri, params) => {
       try {
-        const network = "sei";
+        const network = DEFAULT_NETWORK;
         const txHash = params.txHash as string;
         const tx = await services.getTransaction(txHash as Hash, network);
 

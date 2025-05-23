@@ -5,11 +5,12 @@ import {
   type EstimateGasParameters
 } from 'viem';
 import { getPublicClient } from './clients.js';
+import {DEFAULT_NETWORK} from "../chains.js";
 
 /**
  * Get a transaction by hash for a specific network
  */
-export async function getTransaction(hash: Hash, network = 'sei') {
+export async function getTransaction(hash: Hash, network = DEFAULT_NETWORK) {
   const client = getPublicClient(network);
   return await client.getTransaction({ hash });
 }
@@ -17,7 +18,7 @@ export async function getTransaction(hash: Hash, network = 'sei') {
 /**
  * Get a transaction receipt by hash for a specific network
  */
-export async function getTransactionReceipt(hash: Hash, network = 'sei'): Promise<TransactionReceipt> {
+export async function getTransactionReceipt(hash: Hash, network = DEFAULT_NETWORK): Promise<TransactionReceipt> {
   const client = getPublicClient(network);
   return await client.getTransactionReceipt({ hash });
 }
@@ -25,7 +26,7 @@ export async function getTransactionReceipt(hash: Hash, network = 'sei'): Promis
 /**
  * Get the transaction count for an address for a specific network
  */
-export async function getTransactionCount(address: Address, network = 'sei'): Promise<number> {
+export async function getTransactionCount(address: Address, network = DEFAULT_NETWORK): Promise<number> {
   const client = getPublicClient(network);
   const count = await client.getTransactionCount({ address });
   return Number(count);
@@ -34,7 +35,7 @@ export async function getTransactionCount(address: Address, network = 'sei'): Pr
 /**
  * Estimate gas for a transaction for a specific network
  */
-export async function estimateGas(params: EstimateGasParameters, network = 'sei'): Promise<bigint> {
+export async function estimateGas(params: EstimateGasParameters, network = DEFAULT_NETWORK): Promise<bigint> {
   const client = getPublicClient(network);
   return await client.estimateGas(params);
 }
@@ -42,7 +43,7 @@ export async function estimateGas(params: EstimateGasParameters, network = 'sei'
 /**
  * Get the chain ID for a specific network
  */
-export async function getChainId(network = 'sei'): Promise<number> {
+export async function getChainId(network = DEFAULT_NETWORK): Promise<number> {
   const client = getPublicClient(network);
   const chainId = await client.getChainId();
   return Number(chainId);

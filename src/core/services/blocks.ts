@@ -3,11 +3,12 @@ import {
   type Block
 } from 'viem';
 import { getPublicClient } from './clients.js';
+import {DEFAULT_NETWORK} from "../chains.js";
 
 /**
  * Get the current block number for a specific network
  */
-export async function getBlockNumber(network = 'sei'): Promise<bigint> {
+export async function getBlockNumber(network = DEFAULT_NETWORK): Promise<bigint> {
   const client = getPublicClient(network);
   return await client.getBlockNumber();
 }
@@ -17,7 +18,7 @@ export async function getBlockNumber(network = 'sei'): Promise<bigint> {
  */
 export async function getBlockByNumber(
   blockNumber: number,
-  network = 'sei'
+  network = DEFAULT_NETWORK
 ): Promise<Block> {
   const client = getPublicClient(network);
   return await client.getBlock({ blockNumber: BigInt(blockNumber) });
@@ -28,7 +29,7 @@ export async function getBlockByNumber(
  */
 export async function getBlockByHash(
   blockHash: Hash,
-  network = 'sei'
+  network = DEFAULT_NETWORK
 ): Promise<Block> {
   const client = getPublicClient(network);
   return await client.getBlock({ blockHash });
@@ -37,7 +38,7 @@ export async function getBlockByHash(
 /**
  * Get the latest block for a specific network
  */
-export async function getLatestBlock(network = 'sei'): Promise<Block> {
+export async function getLatestBlock(network = DEFAULT_NETWORK): Promise<Block> {
   const client = getPublicClient(network);
   return await client.getBlock();
 }

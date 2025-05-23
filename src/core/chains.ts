@@ -6,6 +6,7 @@ import {
 } from 'viem/chains';
 
 // Default configuration values
+export const DEFAULT_NETWORK = 'sei';
 export const DEFAULT_RPC_URL = 'https://evm-rpc.sei-apis.com';
 export const DEFAULT_CHAIN_ID = 1329;
 

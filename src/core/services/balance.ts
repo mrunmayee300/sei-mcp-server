@@ -7,6 +7,7 @@ import {
 import { getPublicClient } from './clients.js';
 import { readContract } from './contracts.js';
 import * as services from "./index.js";
+import {DEFAULT_NETWORK} from "../chains.js";
 
 // Standard ERC20 ABI (minimal for reading)
 const erc20Abi = [
@@ -73,8 +74,8 @@ const erc1155Abi = [
  */
 export async function getBalance(
   address: string,
-  network = 'sei'
-): Promise<{ wei: bigint; ether: string }> {
+  network = DEFAULT_NETWORK
+): Promise<{ wei: bigint; sei: string }> {
   const validatedAddress = services.helpers.validateAddress(address);
 
   const client = getPublicClient(network);
@@ -82,7 +83,7 @@ export async function getBalance(
 
   return {
     wei: balance,
-    ether: formatEther(balance)
+    sei: formatEther(balance)
   };
 }
 
@@ -96,7 +97,7 @@ export async function getBalance(
 export async function getERC20Balance(
   tokenAddress: string,
   ownerAddress: string,
-  network = 'sei'
+  network = DEFAULT_NETWORK
 ): Promise<{
   raw: bigint;
   formatted: string;
@@ -144,7 +145,7 @@ export async function isNFTOwner(
   tokenAddress: string,
   ownerAddress: string,
   tokenId: bigint,
-  network = 'sei'
+  network = DEFAULT_NETWORK
 ): Promise<boolean> {
   const validatedTokenAddress = services.helpers.validateAddress(tokenAddress);
   const validatedOwnerAddress = services.helpers.validateAddress(ownerAddress);
@@ -174,7 +175,7 @@ export async function isNFTOwner(
 export async function getERC721Balance(
   tokenAddress: string,
   ownerAddress: string,
-  network = 'sei'
+  network = DEFAULT_NETWORK
 ): Promise<bigint> {
   const validatedTokenAddress = services.helpers.validateAddress(tokenAddress);
   const validatedOwnerAddress = services.helpers.validateAddress(ownerAddress);
@@ -199,7 +200,7 @@ export async function getERC1155Balance(
   tokenAddress: string,
   ownerAddress: string,
   tokenId: bigint,
-  network = 'sei'
+  network = DEFAULT_NETWORK
 ): Promise<bigint> {
   const validatedTokenAddress = services.helpers.validateAddress(tokenAddress);
   const validatedOwnerAddress = services.helpers.validateAddress(ownerAddress);

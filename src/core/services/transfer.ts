@@ -9,6 +9,7 @@ import {
 import { getPublicClient, getWalletClient } from './clients.js';
 import * as services from "./index.js";
 import { getPrivateKeyAsHex } from '../config.js';
+import {DEFAULT_NETWORK} from "../chains.js";
 
 // Standard ERC20 ABI for transfers
 const erc20TransferAbi = [
@@ -122,7 +123,7 @@ const erc1155TransferAbi = [
 export async function transferSei(
   toAddress: string,
   amount: string, // in ether
-  network = 'sei'
+  network = DEFAULT_NETWORK
 ): Promise<Hash> {
   const validatedToAddress = services.helpers.validateAddress(toAddress);
   // Get private key from environment

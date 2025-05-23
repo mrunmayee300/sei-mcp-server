@@ -1,10 +1,10 @@
 import { describe, test, expect, mock, spyOn, afterEach } from 'bun:test';
-import { 
-  getBalance, 
-  getERC20Balance, 
-  isNFTOwner, 
-  getERC721Balance, 
-  getERC1155Balance 
+import {
+  getBalance,
+  getERC20Balance,
+  isNFTOwner,
+  getERC721Balance,
+  getERC1155Balance
 } from '../../../core/services/balance.js';
 
 // Create valid test addresses
@@ -24,31 +24,31 @@ describe('Balance Service', () => {
       const mockClient = {
         getBalance: () => Promise.resolve(1000000000000000000n)
       };
-      
+
       // Mock the modules
       mock.module('../../../core/services/clients.js', () => ({
         getPublicClient: () => mockClient
       }));
-      
+
       mock.module('../../../core/services/utils.js', () => ({
         helpers: {
           validateAddress: (address: string) => address
         }
       }));
-      
+
       mock.module('viem', () => ({
         formatEther: () => '1',
         getContract: () => ({}),
         formatUnits: () => ''
       }));
-      
+
       // Call the function
       const result = await getBalance(VALID_ADDRESS);
-      
+
       // Verify results
       expect(result).toEqual({
         wei: 1000000000000000000n,
-        ether: '1'
+        sei: '1'
       });
     });
   });
@@ -63,26 +63,26 @@ describe('Balance Service', () => {
           decimals: () => Promise.resolve(9)
         }
       };
-      
+
       // Mock the modules
       mock.module('viem', () => ({
         getContract: () => mockContract,
         formatUnits: () => '1',
         formatEther: () => ''
       }));
-      
+
       mock.module('../../../core/services/utils.js', () => ({
         helpers: {
           validateAddress: (address: string) => address
         }
       }));
-      
+
       // Call the function
       const result = await getERC20Balance(
         VALID_TOKEN_ADDRESS,
         VALID_OWNER_ADDRESS
       );
-      
+
       // Verify results
       expect(result).toEqual({
         raw: 1000000000n,
@@ -101,47 +101,47 @@ describe('Balance Service', () => {
       mock.module('../../../core/services/contracts.js', () => ({
         readContract: () => Promise.resolve(VALID_OWNER_ADDRESS)
       }));
-      
+
       mock.module('../../../core/services/utils.js', () => ({
         helpers: {
           validateAddress: (address: string) => address
         }
       }));
-      
+
       // Call the function
       const result = await isNFTOwner(
         VALID_TOKEN_ADDRESS,
         VALID_OWNER_ADDRESS,
         1n
       );
-      
+
       // Verify results
       expect(result).toBe(true);
     });
-    
+
     test('should return false if address does not own the NFT', async () => {
       // Mock the modules
       mock.module('../../../core/services/contracts.js', () => ({
         readContract: () => Promise.resolve('0xDifferentAddress')
       }));
-      
+
       mock.module('../../../core/services/utils.js', () => ({
         helpers: {
           validateAddress: (address: string) => address
         }
       }));
-      
+
       // Call the function
       const result = await isNFTOwner(
         VALID_TOKEN_ADDRESS,
         VALID_OWNER_ADDRESS,
         1n
       );
-      
+
       // Verify results
       expect(result).toBe(false);
     });
-    
+
     test('should return false if there is an error', async () => {
       // Mock the modules
       mock.module('../../../core/services/contracts.js', () => ({
@@ -149,27 +149,27 @@ describe('Balance Service', () => {
           throw new Error('NFT does not exist');
         }
       }));
-      
+
       mock.module('../../../core/services/utils.js', () => ({
         helpers: {
           validateAddress: (address: string) => address
         }
       }));
-      
+
       // Mock console.error to avoid cluttering test output
       const originalConsoleError = console.error;
       console.error = () => {};
-      
+
       // Call the function
       const result = await isNFTOwner(
         VALID_TOKEN_ADDRESS,
         VALID_OWNER_ADDRESS,
         1n
       );
-      
+
       // Verify results
       expect(result).toBe(false);
-      
+
       // Restore console.error
       console.error = originalConsoleError;
     });
@@ -181,19 +181,19 @@ describe('Balance Service', () => {
       mock.module('../../../core/services/contracts.js', () => ({
         readContract: () => Promise.resolve(5n)
       }));
-      
+
       mock.module('../../../core/services/utils.js', () => ({
         helpers: {
           validateAddress: (address: string) => address
         }
       }));
-      
+
       // Call the function
       const result = await getERC721Balance(
         VALID_TOKEN_ADDRESS,
         VALID_OWNER_ADDRESS
       );
-      
+
       // Verify results
       expect(result).toBe(5n);
     });
@@ -205,20 +205,20 @@ describe('Balance Service', () => {
       mock.module('../../../core/services/contracts.js', () => ({
         readContract: () => Promise.resolve(10n)
       }));
-      
+
       mock.module('../../../core/services/utils.js', () => ({
         helpers: {
           validateAddress: (address: string) => address
         }
       }));
-      
+
       // Call the function
       const result = await getERC1155Balance(
         VALID_TOKEN_ADDRESS,
         VALID_OWNER_ADDRESS,
         2n
       );
-      
+
       // Verify results
       expect(result).toBe(10n);
     });

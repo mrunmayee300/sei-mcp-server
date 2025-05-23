@@ -8,7 +8,7 @@ import {
   type Address
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { getChain, getRpcUrl } from '../chains.js';
+import {DEFAULT_NETWORK, getChain, getRpcUrl} from '../chains.js';
 
 // Cache for clients to avoid recreating them for each request
 const clientCache = new Map<string, PublicClient>();
@@ -16,7 +16,7 @@ const clientCache = new Map<string, PublicClient>();
 /**
  * Get a public client for a specific network
  */
-export function getPublicClient(network = 'sei'): PublicClient {
+export function getPublicClient(network = DEFAULT_NETWORK): PublicClient {
   const cacheKey = String(network);
 
   // Return cached client if available
@@ -42,7 +42,7 @@ export function getPublicClient(network = 'sei'): PublicClient {
 /**
  * Create a wallet client for a specific network and private key
  */
-export function getWalletClient(privateKey: Hex, network = 'sei'): WalletClient {
+export function getWalletClient(privateKey: Hex, network = DEFAULT_NETWORK): WalletClient {
   const chain = getChain(network);
   const rpcUrl = getRpcUrl(network);
   const account = privateKeyToAccount(privateKey);
