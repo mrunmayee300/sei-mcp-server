@@ -1,55 +1,51 @@
 import { config } from "dotenv";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { startServer } from "../sei-mcp-server/src/index.js";
-import express from "express";
+import express, { Request, Response } from "express";
 import cors from "cors";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
-// Load environment variables if needed
 config();
 
-// Environment variables — can also be set via .env file
-const PORT = process.env.PORT || 3001;
-const HOST = '0.0.0.0';
-
-
+const PORT = parseInt(process.env.PORT || "3001", 10);
+const HOST = "0.0.0.0";
 
 console.error(`Configured to listen on ${HOST}:${PORT}`);
 
-// Setup Express
 const app = express();
 app.use(express.json());
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-  exposedHeaders: ['Content-Type', 'Access-Control-Allow-Origin']
-}));
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+    exposedHeaders: ["Content-Type", "Access-Control-Allow-Origin"],
+  })
+);
 
-app.options('*', cors());
+app.options("*", cors());
 
-// Keep track of active connections with session IDs
 const connections = new Map<string, SSEServerTransport>();
-
-// Initialize the server
 let server: Server | null = null;
-startServer().then(s => {
-  server = s;
-  console.error("MCP Server initialized successfully");
-}).catch(error => {
-  console.error("Failed to initialize server:", error);
-  process.exit(1);
-});
 
-// SSE endpoint
-app.get("/sse", (req, res) => {
+startServer()
+  .then((s) => {
+    server = s;
+    console.error("MCP Server initialized successfully");
+  })
+  .catch((error) => {
+    console.error("Failed to initialize server:", error);
+    process.exit(1);
+  });
+
+app.get("/sse", (req: Request, res: Response) => {
   console.error(`Received SSE connection request from ${req.ip}`);
   console.error(`Query parameters: ${JSON.stringify(req.query)}`);
 
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (!server) {
     console.error("Server not initialized yet, rejecting SSE connection");
@@ -72,13 +68,16 @@ app.get("/sse", (req, res) => {
       connections.delete(sessionId);
     });
 
-    server.connect(transport).then(() => {
-      console.error(`SSE connection established for session: ${sessionId}`);
-      res.write(`data: ${JSON.stringify({ type: "session_init", sessionId })}\n\n`);
-    }).catch((error: Error) => {
-      console.error(`Error connecting transport to server: ${error}`);
-      connections.delete(sessionId);
-    });
+    server
+      .connect(transport)
+      .then(() => {
+        console.error(`SSE connection established for session: ${sessionId}`);
+        res.write(`data: ${JSON.stringify({ type: "session_init", sessionId })}\n\n`);
+      })
+      .catch((error: Error) => {
+        console.error(`Error connecting transport to server: ${error}`);
+        connections.delete(sessionId);
+      });
   } catch (error) {
     console.error(`Error creating SSE transport: ${error}`);
     connections.delete(sessionId);
@@ -86,8 +85,7 @@ app.get("/sse", (req, res) => {
   }
 });
 
-// Messages endpoint
-app.post("/messages", (req, res) => {
+app.post("/messages", (req: Request, res: Response) => {
   let sessionId = req.query.sessionId?.toString();
 
   if (!sessionId && connections.size === 1) {
@@ -98,9 +96,9 @@ app.post("/messages", (req, res) => {
   console.error(`Received message for sessionId ${sessionId}`);
   console.error(`Message body: ${JSON.stringify(req.body)}`);
 
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (!server) {
     console.error("Server not initialized yet");
@@ -109,9 +107,9 @@ app.post("/messages", (req, res) => {
 
   if (!sessionId) {
     console.error("No session ID provided and multiple connections exist");
-    return res.status(400).json({ 
+    return res.status(400).json({
       error: "No session ID provided. Please provide a sessionId query parameter or connect to /sse first.",
-      activeConnections: connections.size
+      activeConnections: connections.size,
     });
   }
 
@@ -133,50 +131,45 @@ app.post("/messages", (req, res) => {
   }
 });
 
-// Health check
-app.get("/health", (req, res) => {
-  res.status(200).json({ 
+app.get("/health", (_req: Request, res: Response) => {
+  res.status(200).json({
     status: "ok",
     server: server ? "initialized" : "initializing",
     activeConnections: connections.size,
-    connectedSessionIds: Array.from(connections.keys())
+    connectedSessionIds: Array.from(connections.keys()),
   });
 });
 
-// Root endpoint
-app.get("/", (req, res) => {
+app.get("/", (_req: Request, res: Response) => {
   res.status(200).json({
     name: "MCP Server",
     version: "1.0.0",
     endpoints: {
       sse: "/sse",
       messages: "/messages",
-      health: "/health"
+      health: "/health",
     },
     status: server ? "ready" : "initializing",
-    activeConnections: connections.size
+    activeConnections: connections.size,
   });
 });
 
-// Helper: generate session ID
 function generateSessionId(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
     const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
 
-// Graceful shutdown
-process.on('SIGINT', () => {
-  console.error('Shutting down server...');
-  connections.forEach((transport, sessionId) => {
+process.on("SIGINT", () => {
+  console.error("Shutting down server...");
+  connections.forEach((_transport, sessionId) => {
     console.error(`Closing connection for session: ${sessionId}`);
   });
   process.exit(0);
 });
 
-// Start HTTP server
 const httpServer = app.listen(PORT, HOST, () => {
   console.error(`Template MCP Server running at http://${HOST}:${PORT}`);
   console.error(`SSE endpoint: http://${HOST}:${PORT}/sse`);

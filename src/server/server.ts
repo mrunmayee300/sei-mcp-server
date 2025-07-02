@@ -1,5 +1,5 @@
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { startServer } from "../sei-mcp-server/src/index.js"; // ✅ Correct relative path in TypeScript source
+import { startServer } from "../sei-mcp-server/src/index.js";
 
 async function main() {
   try {
