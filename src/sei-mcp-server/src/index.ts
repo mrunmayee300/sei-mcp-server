@@ -1,15 +1,18 @@
 import express from "express";
 import axios from "axios";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { config } from "dotenv";
+
+config(); // ✅ Load .env variables
 
 /**
- * Starts and returns a new MCP EVM Server instance.
+ * Starts and returns a new MCP EVM Server instance with Express app.
  */
 export async function startServer() {
   const app = express();
   app.use(express.json());
 
-  // ✅ MCP server setup
+  // ✅ Create MCP server instance
   const server = new Server(
     { name: "MCP EVM Server", version: "1.0.0" },
     {
@@ -47,17 +50,21 @@ export async function startServer() {
         },
       });
 
-      res.json(nftscanRes.data);
+      res.json({
+        provenance: nftscanRes.data.data?.provenance || [],
+        currentOwner: nftscanRes.data.data?.current_owner || {
+          owner: "Unknown",
+          balance: "0 SEI",
+          otherNFTs: [],
+        },
+      });
     } catch (error) {
       console.error("Error fetching from NFTScan:", error);
       res.status(500).json({ error: "Failed to fetch provenance data" });
     }
   });
 
-  // ✅ Listen if desired, or export app if your main file handles listen
-  // Example: app.listen(3001, () => console.log("Server listening on port 3001"));
-
-  // 👇 Attach express app to server object if needed
+  // ✅ Attach Express app to server (optional)
   (server as any).app = app;
 
   return server;
