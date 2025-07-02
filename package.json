@@ -15,21 +15,18 @@
     "LICENSE"
   ],
   "scripts": {
-    "start": "bun run src/sei-mcp-server/src/index.ts",
-    "build": "bun build src/sei-mcp-server/src/index.ts src/server/server.ts src/server/http-server.ts --outdir build --target node",
-    "build:http": "bun build src/server/http-server.ts --outdir build --target node --outfile http-server.js",
-    "dev": "bun --watch src/index.ts",
-    "start:http": "ts-node --esm src/server/server.js",
-    "dev:http": "node --loader ts-node/esm src/server/server.ts",
-    "prepublishOnly": "bun run build && bun run build:http",
-    "test": "bun test",
-    "version:patch": "npm version patch",
-    "version:minor": "npm version minor",
-    "version:major": "npm version major",
-    "release": "npm publish",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
-    "changelog:latest": "conventional-changelog -p angular -r 1 > RELEASE_NOTES.md"
-  },
+  "start": "node build/server/http-server.js",
+  "build": "bun build src/sei-mcp-server/src/index.ts src/server/server.ts src/server/http-server.ts --outdir build --target node",
+  "build:http": "bun build src/server/http-server.ts --outdir build --target node --outfile http-server.js",
+  "prepublishOnly": "bun run build && bun run build:http",
+  "test": "bun test",
+  "version:patch": "npm version patch",
+  "version:minor": "npm version minor",
+  "version:major": "npm version major",
+  "release": "npm publish",
+  "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
+  "changelog:latest": "conventional-changelog -p angular -r 1 > RELEASE_NOTES.md"
+},
   "devDependencies": {
     "@types/bun": "latest",
     "@types/cors": "^2.8.17",
