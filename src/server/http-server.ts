@@ -7,7 +7,7 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
 config();
 
-const PORT = parseInt(process.env.PORT || "3001", 10);
+const PORT = parseInt(process.env.PORT || "8080", 10);
 const HOST = "0.0.0.0";
 
 console.error(`Configured to listen on ${HOST}:${PORT}`);
