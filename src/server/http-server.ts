@@ -9,8 +9,9 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 config();
 
 // Environment variables — can also be set via .env file
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const HOST = '0.0.0.0';
+
 
 console.error(`Configured to listen on ${HOST}:${PORT}`);
 
@@ -178,8 +179,6 @@ process.on('SIGINT', () => {
 const httpServer = app.listen(PORT, HOST, () => {
   console.error(`Template MCP Server running at http://${HOST}:${PORT}`);
   console.error(`SSE endpoint: http://${HOST}:${PORT}/sse`);
-  console.error(`Messages endpoint: http://${HOST}:${PORT}/messages`);
+  console.error(`Messages endpoint: http://${HOST}:${PORT}/messages (sessionId optional if only one connection)`);
   console.error(`Health check: http://${HOST}:${PORT}/health`);
-}).on('error', (err: Error) => {
-  console.error(`Server error: ${err}`);
 });
