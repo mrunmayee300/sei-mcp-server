@@ -1,11 +1,14 @@
 import { config } from "dotenv";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-import startServer from "./server.js";
-import express, { Request, Response } from "express";
+import { startServer } from "../sei-mcp-server/src/index.js";
+import express from "express";
 import cors from "cors";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
-// Environment variables - hardcoded values
+// Load environment variables if needed
+config();
+
+// Environment variables — can also be set via .env file
 const PORT = 3001;
 const HOST = '0.0.0.0';
 
@@ -22,14 +25,13 @@ app.use(cors({
   exposedHeaders: ['Content-Type', 'Access-Control-Allow-Origin']
 }));
 
-// Add OPTIONS handling for preflight requests
 app.options('*', cors());
 
 // Keep track of active connections with session IDs
 const connections = new Map<string, SSEServerTransport>();
 
 // Initialize the server
-let server: McpServer | null = null;
+let server: Server | null = null;
 startServer().then(s => {
   server = s;
   console.error("MCP Server initialized successfully");
@@ -38,54 +40,38 @@ startServer().then(s => {
   process.exit(1);
 });
 
-// Define routes
-// @ts-ignore
-app.get("/sse", (req: Request, res: Response) => {
+// SSE endpoint
+app.get("/sse", (req, res) => {
   console.error(`Received SSE connection request from ${req.ip}`);
   console.error(`Query parameters: ${JSON.stringify(req.query)}`);
-  
-  // Set CORS headers explicitly
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
+
   if (!server) {
     console.error("Server not initialized yet, rejecting SSE connection");
     return res.status(503).send("Server not initialized");
   }
-  
-  // Generate a unique session ID if one is not provided
-  // The sessionId is crucial for mapping SSE connections to message handlers
+
   const sessionId = generateSessionId();
   console.error(`Creating SSE session with ID: ${sessionId}`);
-  
-  // Set SSE headers
+
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache, no-transform");
   res.setHeader("Connection", "keep-alive");
-  
-  // Create transport - handle before writing to response
+
   try {
-    console.error(`Creating SSE transport for session: ${sessionId}`);
-    
-    // Create and store the transport keyed by session ID
-    // Note: The path must match what the client expects (typically "/messages")
     const transport = new SSEServerTransport("/messages", res);
     connections.set(sessionId, transport);
-    
-    // Handle connection close
+
     req.on("close", () => {
       console.error(`SSE connection closed for session: ${sessionId}`);
       connections.delete(sessionId);
     });
-    
-    // Connect transport to server - this must happen before sending any data
+
     server.connect(transport).then(() => {
-      // Send an initial event with the session ID for the client to use in messages
-      // Only send this after the connection is established
       console.error(`SSE connection established for session: ${sessionId}`);
-      
-      // Send the session ID to the client
       res.write(`data: ${JSON.stringify({ type: "session_init", sessionId })}\n\n`);
     }).catch((error: Error) => {
       console.error(`Error connecting transport to server: ${error}`);
@@ -98,30 +84,27 @@ app.get("/sse", (req: Request, res: Response) => {
   }
 });
 
-// @ts-ignore
-app.post("/messages", (req: Request, res: Response) => {
-  // Extract the session ID from the URL query parameters
+// Messages endpoint
+app.post("/messages", (req, res) => {
   let sessionId = req.query.sessionId?.toString();
-  
-  // If no sessionId is provided and there's only one connection, use that
+
   if (!sessionId && connections.size === 1) {
     sessionId = Array.from(connections.keys())[0];
     console.error(`No sessionId provided, using the only active session: ${sessionId}`);
   }
-  
+
   console.error(`Received message for sessionId ${sessionId}`);
   console.error(`Message body: ${JSON.stringify(req.body)}`);
-  
-  // Set CORS headers
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
+
   if (!server) {
     console.error("Server not initialized yet");
     return res.status(503).json({ error: "Server not initialized" });
   }
-  
+
   if (!sessionId) {
     console.error("No session ID provided and multiple connections exist");
     return res.status(400).json({ 
@@ -129,13 +112,13 @@ app.post("/messages", (req: Request, res: Response) => {
       activeConnections: connections.size
     });
   }
-  
+
   const transport = connections.get(sessionId);
   if (!transport) {
     console.error(`Session not found: ${sessionId}`);
     return res.status(404).json({ error: "Session not found" });
   }
-  
+
   console.error(`Handling message for session: ${sessionId}`);
   try {
     transport.handlePostMessage(req, res).catch((error: Error) => {
@@ -148,8 +131,8 @@ app.post("/messages", (req: Request, res: Response) => {
   }
 });
 
-// Add a simple health check endpoint
-app.get("/health", (req: Request, res: Response) => {
+// Health check
+app.get("/health", (req, res) => {
   res.status(200).json({ 
     status: "ok",
     server: server ? "initialized" : "initializing",
@@ -158,8 +141,8 @@ app.get("/health", (req: Request, res: Response) => {
   });
 });
 
-// Add a root endpoint for basic info
-app.get("/", (req: Request, res: Response) => {
+// Root endpoint
+app.get("/", (req, res) => {
   res.status(200).json({
     name: "MCP Server",
     version: "1.0.0",
@@ -173,7 +156,7 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-// Helper function to generate a UUID-like session ID
+// Helper: generate session ID
 function generateSessionId(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0;
@@ -182,7 +165,7 @@ function generateSessionId(): string {
   });
 }
 
-// Handle process termination gracefully
+// Graceful shutdown
 process.on('SIGINT', () => {
   console.error('Shutting down server...');
   connections.forEach((transport, sessionId) => {
@@ -191,12 +174,12 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-// Start the HTTP server on a different port (3001) to avoid conflicts
+// Start HTTP server
 const httpServer = app.listen(PORT, HOST, () => {
   console.error(`Template MCP Server running at http://${HOST}:${PORT}`);
   console.error(`SSE endpoint: http://${HOST}:${PORT}/sse`);
-  console.error(`Messages endpoint: http://${HOST}:${PORT}/messages (sessionId optional if only one connection)`);
+  console.error(`Messages endpoint: http://${HOST}:${PORT}/messages`);
   console.error(`Health check: http://${HOST}:${PORT}/health`);
 }).on('error', (err: Error) => {
   console.error(`Server error: ${err}`);
-}); 
+});

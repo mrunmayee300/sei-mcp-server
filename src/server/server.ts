@@ -1,34 +1,19 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { registerEVMResources } from "../core/resources.js";
-import { registerEVMTools } from "../core/tools.js";
-import { registerEVMPrompts } from "../core/prompts.js";
-import { getSupportedNetworks } from "../core/chains.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { startServer } from "../sei-mcp-server/src/index.js"; // ✅ Correct relative path in TypeScript source
 
-// Create and start the MCP server
-async function startServer() {
+async function main() {
   try {
-    // Create a new MCP server instance
-    const server = new McpServer({
-      name: "EVM-Server",
-      version: "1.0.0"
-    });
-
-    // Register all resources, tools, and prompts
-    registerEVMResources(server);
-    registerEVMTools(server);
-    registerEVMPrompts(server);
-    
-    // Log server information
-    console.error(`EVM MCP Server initialized`);
-    console.error(`Supported networks: ${getSupportedNetworks().join(", ")}`);
-    console.error("Server is ready to handle requests");
-    
-    return server;
+    const server = await startServer();
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    console.error("EVM MCP Server running on stdio");
   } catch (error) {
-    console.error("Failed to initialize server:", error);
+    console.error("Error starting MCP server:", error);
     process.exit(1);
   }
 }
 
-// Export the server creation function
-export default startServer; 
+main().catch((error) => {
+  console.error("Fatal error in main():", error);
+  process.exit(1);
+});
