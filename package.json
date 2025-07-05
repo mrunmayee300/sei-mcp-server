@@ -3,9 +3,9 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-      "dev": "next dev",
-      "build": "next build",
-      "start": "next start",
+      "start": "node dist/index.js", 
+  "build": "tsc", 
+  "dev": "ts-node src/index.ts",
       "lint": "next lint"
     },
     "dependencies": {
